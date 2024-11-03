@@ -6,17 +6,11 @@ import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/build/pdf.worker.entry';
 import ReactMarkdown from 'react-markdown';
 
-import './Flashcard';
-import Flashcard from './Flashcard';
-
 function App() {
   const [response, setResponse] = useState("");
   const [toPrompt, setToPrompt] = useState("");
   const [messages, setMessages] = useState([{ role: "user", content: "" }]);
   const [fetching, setFetching] = useState(false);
-  const [flashcard, setFlashcard] = useState(false);
-  const [summarizedFile, setSummarizedFile] = useState("");
-  const [hasSummarizedFile, setHasSummarizedFile] = useState(false);
   const [lastProcessedMessageIndex, setLastProcessedMessageIndex] = useState(-1);
 
   // Initialize Google Generative AI client once
@@ -29,10 +23,6 @@ function App() {
   
     const fileType = file.name.split('.').pop().toLowerCase();
     let fileContent = "";
-
-    if (!hasSummarizedFile) {
-      setHasSummarizedFile(true);
-    }
   
     try {
       setFetching(true);
@@ -58,6 +48,7 @@ function App() {
         Content to summarize:
       ${fileContent}
       `;
+
   
       setMessages((prev) => [...prev, { role: "user", content: formattedPrompt }]);
     } catch (error) {
@@ -147,16 +138,13 @@ function App() {
       }
 
       setMessages((prev) => [...prev, { role: "bot", content: fullResponse }]);
-
-      if (hasSummarizedFile) {
-        setSummarizedFile(fullResponse);
-        setHasSummarizedFile(false);
-      }
     } catch (error) {
       console.error("Error generating text:", error);
       setFetching(false); 
-    } 
+    }
   }, [model, messages]);
+  
+  
 
   useEffect(() => {
     const newMessageIndex = messages.length - 1;
@@ -171,23 +159,18 @@ function App() {
     }
   }, [messages, lastProcessedMessageIndex, textGenTextOnlyPromptStreaming]);
   
-  const gotoFlashcard = () => {
-    setFlashcard(true);
-  }
+
   return (
-    <div>
-      {!flashcard ? (<div className="App">
+    <div className="App">
       <div>
         <input type="text" value={toPrompt} onChange={(e) => setToPrompt(e.target.value)} />
         <button onClick={handlePrompt} disabled={fetching}>
           {fetching ? "Loading..." : "Submit"}
         </button>
         <input type="file" onChange={handleFileUpload} accept=".pdf,.docx,.txt" />
-        <button disabled={fetching} onClick={gotoFlashcard}>Flashcards</button>
-        <h1>Chatbot Response:</h1>
+        <h1 style={{color: "#bb86fc"}}>Chatbot Response:</h1>
         <ReactMarkdown className="react-markdown">{response}</ReactMarkdown>
       </div>
-    </div>) : <Flashcard summarizedFile={summarizedFile} setFlashcard={setFlashcard} />}
     </div>
   );
 }
