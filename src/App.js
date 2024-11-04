@@ -18,6 +18,7 @@ function App() {
   const [summarizedFile, setSummarizedFile] = useState("");
   const [hasSummarizedFile, setHasSummarizedFile] = useState(false);
   const [lastProcessedMessageIndex, setLastProcessedMessageIndex] = useState(-1);
+  const [flashcards, setFlashcards] = useState([]);
 
   // Initialize Google Generative AI client once
   const genAI = React.useMemo(() => new GoogleGenerativeAI('AIzaSyAo6PDHB40-sFxux21U99sgw2WTedBGBJM'), []);
@@ -187,7 +188,7 @@ function App() {
         <h1>Chatbot Response:</h1>
         <ReactMarkdown className="react-markdown">{response}</ReactMarkdown>
       </div>
-    </div>) : <Flashcard summarizedFile={summarizedFile} setFlashcard={setFlashcard} />}
+    </div>) : <Flashcard summarizedFile={summarizedFile} setFlashcard={setFlashcard} setFlashcards={setFlashcards} flashcards={flashcards} />}
     </div>
   );
 }

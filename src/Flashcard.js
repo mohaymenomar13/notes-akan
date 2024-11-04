@@ -7,17 +7,17 @@ function Flashcard(props) {
   const genAI = React.useMemo(() => new GoogleGenerativeAI('AIzaSyAo6PDHB40-sFxux21U99sgw2WTedBGBJM'), []);
   const model = React.useMemo(() => genAI.getGenerativeModel({ model: "gemini-1.5-flash" }), [genAI]);
 
-  const [flashcards, setFlashcards] = useState([{}]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [ratings, setRatings] = useState(Array(flashcards.length).fill(null));
+  const [ratings, setRatings] = useState(Array(props.flashcards.length).fill(null));
   const [reviewMode, setReviewMode] = useState(false);
   const [selectedRating, setSelectedRating] = useState(null);
   const [dashboardMode, setDashboardMode] = useState(true);
   const [newQuestion, setNewQuestion] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
   const [editIndex, setEditIndex] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [isLoading, setIsLoading] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
@@ -27,7 +27,7 @@ function Flashcard(props) {
     setIsFlipped(false);
     setSelectedRating(null);
     setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % flashcards.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % props.flashcards.length);
     }, 300);
   };
 
@@ -35,7 +35,7 @@ function Flashcard(props) {
     setIsFlipped(false);
     setSelectedRating(null);
     setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex - 1 + flashcards.length) % flashcards.length);
+      setCurrentIndex((prevIndex) => (prevIndex - 1 + props.flashcards.length) % props.flashcards.length);
     }, 300);
   };
 
@@ -58,35 +58,43 @@ function Flashcard(props) {
   const startDashboard = () => {
     setDashboardMode(true);
     setReviewMode(false);
-    setRatings(Array(flashcards.length).fill(null)); // Reset ratings here
-    setCurrentIndex(0); // Optionally reset the current index
+    setRatings(Array(props.flashcards.length).fill(null));
+    setCurrentIndex(0);
   };
 
-  const badQuestions = flashcards.filter((_, index) => ratings[index] === "Bad");
+  const badQuestions = props.flashcards.filter((_, index) => ratings[index] === "Bad");
 
   const handleAddOrEditCard = () => {
     if (editIndex !== null) {
-      const updatedFlashcards = [...flashcards];
+      const updatedFlashcards = [...props.flashcards];
       updatedFlashcards[editIndex] = { description: newQuestion, answer: newAnswer };
-      setFlashcards(updatedFlashcards);
+      props.setFlashcards(updatedFlashcards);
       setEditIndex(null);
     } else {
-      setFlashcards([...flashcards, { description: newQuestion, answer: newAnswer }]);
+      props.setFlashcards([...props.flashcards, { description: newQuestion, answer: newAnswer }]);
     }
+    setNewQuestion("");
+    setNewAnswer("");
+    setIsPopupOpen(false);
+  };
+
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    setEditIndex(null);
     setNewQuestion("");
     setNewAnswer("");
   };
 
   const handleEditCard = (index) => {
-    window.scrollTo(0, 0);
-    setNewQuestion(flashcards[index].description);
-    setNewAnswer(flashcards[index].answer);
+    setNewQuestion(props.flashcards[index].description);
+    setNewAnswer(props.flashcards[index].answer);
     setEditIndex(index);
+    setIsPopupOpen(true);
   };
 
   const handleDeleteCard = (index) => {
-    const updatedFlashcards = flashcards.filter((_, i) => i !== index);
-    setFlashcards(updatedFlashcards);
+    const updatedFlashcards = props.flashcards.filter((_, i) => i !== index);
+    props.setFlashcards(updatedFlashcards);
     setRatings((prevRatings) => {
       const newRatings = [...prevRatings];
       newRatings.splice(index, 1);
@@ -100,42 +108,27 @@ function Flashcard(props) {
       return;
     }
 
-    setIsLoading(true); // Start loading
+    setIsLoading(true);
 
     const prompt = `
-      Make a array of objects to generate based on the content to be generate for the flashcards as much as possible:
-      -The format of array of objects should be like this and return your response only like this:
-
-      [{ description: "The top of the hierarchy, responsible for making big decisions, setting the vision, and steering the organization in the right direction.", answer: "Executive Level" },
-      { description: "Works under the executive level and manages specific units, ensuring everything runs smoothly within their areas.", answer: "Managerial Level" },
-      { description: "Directly handles the tasks that make the organization function on a daily basis. They focus on specific tasks, like delivering services, preparing materials, and interacting with customers.", answer: "Operational Level"},]
-
-      -If there's a possible enumarations question, do something like this format to add:
-      { description: "Levels of an Organization", answer: "1. Executive Level 2. Managerial Level 3. Operational Level" },
-      { description: "Key Areas of Finance", answer: "Investment Management, Financial Planning, Risk Management, Mergers and Acquisitions"}
-
-      Important: 
-        - Copy the exact wording of the descriptions as they appear in the text. Do not paraphrase or alter the descriptions in any way.
-        - Don't add repeated answers.
-      The content:
-      ${props.summarizedFile}
+      Make an array of objects to generate based on the content to be generated for the flashcards as much as possible:
+      - Don’t put too many chapters if not necessary.
+      - If there's a possible enumeration question, add it.
+      - Format: [{ description: "...", answer: "..." }]
+      Content: ${props.summarizedFile}
     `;
 
     try {
       const result = await model.generateContent(prompt);
       let jsonString = await result.response.text();
-
-      // Ensure JSON keys are properly formatted
-      jsonString = jsonString.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3'); 
-
-      // Parse the JSON
+      jsonString = jsonString.replace(/```json|```/g, '').trim();
+      jsonString = jsonString.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
       const parsed = JSON.parse(jsonString);
-      setFlashcards(parsed);
-      console.log(parsed)
+      props.setFlashcards(parsed);
     } catch (error) {
       console.error("Error generating flashcards:", error);
     } finally {
-      setIsLoading(false); // End loading
+      setIsLoading(false);
     }
   };
 
@@ -149,22 +142,8 @@ function Flashcard(props) {
       {dashboardMode ? (
         <div className="dashboard">
           <h2>Dashboard</h2>
-          <input
-            type="text"
-            placeholder="Question"
-            value={newQuestion}
-            onChange={(e) => setNewQuestion(e.target.value)}
-            disabled={isLoading}
-          />
-          <textarea
-            type="text"
-            placeholder="Answer"
-            value={newAnswer}
-            onChange={(e) => setNewAnswer(e.target.value)}
-            disabled={isLoading}
-          /> <br />
-          <button onClick={handleAddOrEditCard} disabled={isLoading}>
-            {editIndex !== null ? 'Edit Question' : 'Add Question'}
+          <button onClick={() => setIsPopupOpen(true)} disabled={isLoading}>
+            Add New Question
           </button>
           <button onClick={generateFlashcards} disabled={isLoading}>
             {isLoading ? "Generating..." : "Generate Flashcards"}
@@ -182,7 +161,7 @@ function Flashcard(props) {
               </tr>
             </thead>
             <tbody>
-              {flashcards.map((card, index) => (
+              {props.flashcards.map((card, index) => (
                 <tr key={index}>
                   <td>{card.description}</td>
                   <td>{card.answer}</td>
@@ -194,17 +173,17 @@ function Flashcard(props) {
               ))}
             </tbody>
           </table>
-          <button onClick={review} disabled={flashcards.length === 0 || isLoading}>Start Reviewing</button>
+          <button onClick={review} disabled={props.flashcards.length === 0 || isLoading}>Start Reviewing</button>
         </div>
       ) : reviewMode ? (
         <>
           <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
-            <ReactMarkdown className="front">{flashcards[currentIndex].description}</ReactMarkdown>
-            <ReactMarkdown className="back">{flashcards[currentIndex].answer}</ReactMarkdown>
+            <ReactMarkdown className="front">{props.flashcards[currentIndex].description}</ReactMarkdown>
+            <ReactMarkdown className="back">{props.flashcards[currentIndex].answer}</ReactMarkdown>
           </div>
           <div className="navigation">
             <button onClick={prevCard} disabled={currentIndex === 0 || ratings[currentIndex] === null}>Previous</button>
-            <button onClick={nextCard} disabled={currentIndex === flashcards.length - 1 || ratings[currentIndex] === null}>Next</button>
+            <button onClick={nextCard} disabled={currentIndex === props.flashcards.length - 1 || ratings[currentIndex] === null}>Next</button>
           </div>
           <div className="rating-buttons">
             <button className={`rating ${selectedRating === "Good" ? 'selected' : ''}`} onClick={() => rateQuestion("Good")}>
@@ -215,7 +194,7 @@ function Flashcard(props) {
             </button>
           </div>
           <button onClick={startDashboard}>Back to Dashboard</button>
-          {currentIndex === flashcards.length - 1 && (
+          {currentIndex === props.flashcards.length - 1 && (
             <button onClick={reviewQuestions}>Review Questions</button>
           )}
         </>
@@ -233,6 +212,31 @@ function Flashcard(props) {
             <p>All questions were rated as good!</p>
           )}
           <button onClick={startDashboard}>Back to Dashboard</button>
+        </div>
+      )}
+
+      {isPopupOpen && (
+        <div className="popup-dialog">
+          <div className="popup-content">
+            <h2>{editIndex !== null ? 'Edit Question' : 'Add New Question'}</h2>
+            <input
+              type="text"
+              placeholder="Question"
+              value={newQuestion}
+              onChange={(e) => setNewQuestion(e.target.value)}
+              disabled={isLoading}
+            />
+            <textarea
+              placeholder="Answer"
+              value={newAnswer}
+              onChange={(e) => setNewAnswer(e.target.value)}
+              disabled={isLoading}
+            />
+            <button onClick={handleAddOrEditCard} disabled={isLoading}>
+              {editIndex !== null ? 'Update' : 'Add'}
+            </button>
+            <button onClick={closePopup} disabled={isLoading}>Close</button>
+          </div>
         </div>
       )}
     </div>
