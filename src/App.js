@@ -21,7 +21,7 @@ function App() {
   const [flashcards, setFlashcards] = useState([]);
 
   // Initialize Google Generative AI client once
-  const genAI = React.useMemo(() => new GoogleGenerativeAI('AIzaSyAo6PDHB40-sFxux21U99sgw2WTedBGBJM'), []);
+  const genAI = React.useMemo(() => new GoogleGenerativeAI(process.env.REACT_APP_API_KEY), []);
   const model = React.useMemo(() => genAI.getGenerativeModel({ model: "gemini-1.5-flash" }), [genAI]);
 
   const handleFileUpload = useCallback(async (event) => {
