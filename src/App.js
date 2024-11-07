@@ -75,6 +75,7 @@ function App() {
       ${fileContent}
       `;
 
+      setResponse("");
       setMessages((prev) => [...prev, { role: "user", content: formattedPrompt }]);
     } catch (error) {
       console.error("File processing error:", error);

@@ -18,6 +18,7 @@ function Flashcard(props) {
   const [editIndex, setEditIndex] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [randomizedFlashcards, setRandomizedFlashcards] = useState([...props.flashcards]);
 
   const nextCard = () => {
     setIsFlipped(false);
@@ -42,19 +43,16 @@ function Flashcard(props) {
     setSelectedRating(rating);
   };
 
-  const [randomizedFlashcards, setRandomizedFlashcards] = useState([...props.flashcards]);
-
   const shuffleArray = (array) => {
     return array.sort(() => Math.random() - 0.5);
   };
 
-  const review = () => {
+  const review = async () => {
     setDashboardMode(false);
     setReviewMode(true);
   };
 
   useEffect(() => {
-    // Shuffle flashcards when review mode starts
     if (reviewMode) {
       const shuffled = shuffleArray([...props.flashcards]);
       setRandomizedFlashcards(shuffled);
@@ -153,11 +151,15 @@ function Flashcard(props) {
     props.setFlashcard(false);
   };
 
+  useEffect( () => {
+    localStorage.setItem('flashcards', JSON.stringify(props.flashcards));
+  }, [handleAddOrEditCard, handleDeleteCard, generateFlashcards])
+
   return (
     <div className='App'>
       <h1>Flashcards App</h1>
       {dashboardMode ? (
-        <div className="dashboard">
+        <div>
           <h2>Dashboard</h2>
           <button onClick={() => setIsPopupOpen(true)} disabled={isLoading}>
             Add New Question
@@ -169,34 +171,36 @@ function Flashcard(props) {
             Back to Summarize
           </button>
           <h3>Current Flashcards:</h3>
-          <table className="flashcard-table">
-            <thead>
-              <tr>
-                <th>Question</th>
-                <th>Answer</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {props.flashcards.map((card, index) => (
-                <tr key={index}>
-                  <td>{card.description}</td>
-                  <td>{card.answer}</td>
-                  <td>
-                    <button onClick={() => handleEditCard(index)} disabled={isLoading}>Edit</button>
-                    <button onClick={() => handleDeleteCard(index)} disabled={isLoading}>Delete</button>
-                  </td>
+          <div className='tablee'>
+            <table className="flashcard-table">
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Answer</th>
+                  <th>Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <button onClick={review} disabled={props.flashcards.length === 0 || isLoading}>Start Reviewing</button>
+              </thead>
+              <tbody>
+                {props.flashcards.map((card, index) => (
+                  <tr key={index}>
+                    <td>{card.description}</td>
+                    <td>{card.answer}</td>
+                    <td>
+                      <button onClick={() => handleEditCard(index)} disabled={isLoading}>Edit</button>
+                      <button onClick={() => handleDeleteCard(index)} disabled={isLoading}>Delete</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <button onClick={review} disabled={props.flashcards.length === 0 || isLoading}>Start Reviewing</button>
+          </div>
         </div>
       ) : reviewMode ? (
         <>
           <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={() => setIsFlipped(!isFlipped)}>
-          <ReactMarkdown className="front">{randomizedFlashcards[currentIndex].description}</ReactMarkdown>
-          <ReactMarkdown className="back">{randomizedFlashcards[currentIndex].answer}</ReactMarkdown>
+            <ReactMarkdown className="front">{randomizedFlashcards[currentIndex].description}</ReactMarkdown>
+            <ReactMarkdown className="back">{randomizedFlashcards[currentIndex].answer}</ReactMarkdown>
           </div>
           <div className="navigation">
             <button onClick={prevCard} disabled={currentIndex === 0 || ratings[currentIndex] === null}>Previous</button>
