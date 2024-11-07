@@ -154,7 +154,7 @@ function Flashcard(props) {
   };
 
   return (
-    <div className="App">
+    <div className='App'>
       <h1>Flashcards App</h1>
       {dashboardMode ? (
         <div className="dashboard">
