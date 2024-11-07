@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Flashcard.css';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import ReactMarkdown from 'react-markdown';
 
 function Flashcard(props) {
   const genAI = React.useMemo(() => new GoogleGenerativeAI(process.env.REACT_APP_API_KEY), []);
-  const model = React.useMemo(() => genAI.getGenerativeModel({ model: "gemini-1.5-flash" }), [genAI]);
+  const model = React.useMemo(() => genAI.getGenerativeModel({ model: "gemini-1.5-pro" }), [genAI]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -19,15 +19,11 @@ function Flashcard(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 
-  const handleFlip = () => {
-    setIsFlipped(!isFlipped);
-  };
-
   const nextCard = () => {
     setIsFlipped(false);
     setSelectedRating(null);
     setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % props.flashcards.length);
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % randomizedFlashcards.length);
     }, 300);
   };
 
@@ -35,7 +31,7 @@ function Flashcard(props) {
     setIsFlipped(false);
     setSelectedRating(null);
     setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex - 1 + props.flashcards.length) % props.flashcards.length);
+      setCurrentIndex((prevIndex) => (prevIndex - 1 + randomizedFlashcards.length) % randomizedFlashcards.length);
     }, 300);
   };
 
@@ -46,10 +42,27 @@ function Flashcard(props) {
     setSelectedRating(rating);
   };
 
+  const [randomizedFlashcards, setRandomizedFlashcards] = useState([...props.flashcards]);
+
+  const shuffleArray = (array) => {
+    return array.sort(() => Math.random() - 0.5);
+  };
+
   const review = () => {
     setDashboardMode(false);
     setReviewMode(true);
   };
+
+  useEffect(() => {
+    // Shuffle flashcards when review mode starts
+    if (reviewMode) {
+      const shuffled = shuffleArray([...props.flashcards]);
+      setRandomizedFlashcards(shuffled);
+      setCurrentIndex(0);  // Reset the index to start from the first card
+      setIsFlipped(false);  // Ensure cards are not flipped initially
+    }
+  }, [reviewMode, props.flashcards]);
+
 
   const reviewQuestions = () => {
     setReviewMode(false);
@@ -64,15 +77,17 @@ function Flashcard(props) {
 
   const badQuestions = props.flashcards.filter((_, index) => ratings[index] === "Bad");
 
-  const handleAddOrEditCard = () => {
+  const handleAddOrEditCard = async () => {
     if (editIndex !== null) {
       const updatedFlashcards = [...props.flashcards];
       updatedFlashcards[editIndex] = { description: newQuestion, answer: newAnswer };
-      props.setFlashcards(updatedFlashcards);
+      await props.setFlashcards(updatedFlashcards);
       setEditIndex(null);
     } else {
       props.setFlashcards([...props.flashcards, { description: newQuestion, answer: newAnswer }]);
     }
+    await localStorage.setItem('flashcards', JSON.stringify(props.flashcards));
+    console.log(props.flashcards)
     setNewQuestion("");
     setNewAnswer("");
     setIsPopupOpen(false);
@@ -92,9 +107,10 @@ function Flashcard(props) {
     setIsPopupOpen(true);
   };
 
-  const handleDeleteCard = (index) => {
+  const handleDeleteCard = async (index) => {
     const updatedFlashcards = props.flashcards.filter((_, i) => i !== index);
-    props.setFlashcards(updatedFlashcards);
+    await props.setFlashcards(updatedFlashcards);
+    await localStorage.setItem('flashcards', JSON.stringify(props.flashcards));
     setRatings((prevRatings) => {
       const newRatings = [...prevRatings];
       newRatings.splice(index, 1);
@@ -112,7 +128,7 @@ function Flashcard(props) {
 
     const prompt = `
       Make an array of objects to generate based on the content to be generated for the flashcards as much as possible:
-      - Don’t put too many chapters if not necessary.
+      - This is for JSON generation
       - If there's a possible enumeration question, add it.
       - Format: [{ description: "...", answer: "..." }]
       Content: ${props.summarizedFile}
@@ -124,7 +140,8 @@ function Flashcard(props) {
       jsonString = jsonString.replace(/```json|```/g, '').trim();
       jsonString = jsonString.replace(/([{,]\s*)(\w+)(\s*:)/g, '$1"$2"$3');
       const parsed = JSON.parse(jsonString);
-      props.setFlashcards(parsed);
+      await props.setFlashcards(parsed);
+      await localStorage.setItem('flashcards', JSON.stringify(parsed));
     } catch (error) {
       console.error("Error generating flashcards:", error);
     } finally {
@@ -177,13 +194,13 @@ function Flashcard(props) {
         </div>
       ) : reviewMode ? (
         <>
-          <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={handleFlip}>
-            <ReactMarkdown className="front">{props.flashcards[currentIndex].description}</ReactMarkdown>
-            <ReactMarkdown className="back">{props.flashcards[currentIndex].answer}</ReactMarkdown>
+          <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={() => setIsFlipped(!isFlipped)}>
+          <ReactMarkdown className="front">{randomizedFlashcards[currentIndex].description}</ReactMarkdown>
+          <ReactMarkdown className="back">{randomizedFlashcards[currentIndex].answer}</ReactMarkdown>
           </div>
           <div className="navigation">
             <button onClick={prevCard} disabled={currentIndex === 0 || ratings[currentIndex] === null}>Previous</button>
-            <button onClick={nextCard} disabled={currentIndex === props.flashcards.length - 1 || ratings[currentIndex] === null}>Next</button>
+            <button onClick={nextCard} disabled={currentIndex === randomizedFlashcards.length - 1 || ratings[currentIndex] === null}>Next</button>
           </div>
           <div className="rating-buttons">
             <button className={`rating ${selectedRating === "Good" ? 'selected' : ''}`} onClick={() => rateQuestion("Good")}>
@@ -195,7 +212,7 @@ function Flashcard(props) {
           </div>
           <button onClick={startDashboard}>Back to Dashboard</button>
           {currentIndex === props.flashcards.length - 1 && (
-            <button onClick={reviewQuestions}>Review Questions</button>
+            <button onClick={reviewQuestions} disabled={ratings.some((rating) => rating === null)}>Review Questions</button>
           )}
         </>
       ) : (

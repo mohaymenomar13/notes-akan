@@ -51,6 +51,7 @@ input[type="file"] {
   overflow-wrap: break-word;
   max-width: 800px;
   color: #e0e0e0;
+  display: inline-block;
 }
 
 .react-markdown h1,
