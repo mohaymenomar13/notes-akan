@@ -176,7 +176,6 @@ function App() {
   }, [model, messages]);
 
   useEffect(() => {
-    console.log("use effect at App.js");
     (async () => {
       const storedSummarizedfile = await localStorage.getItem("summarizedFile");
       const storedFlashcards = await localStorage.getItem("flashcards");
@@ -186,7 +185,7 @@ function App() {
         await setResponse(JSON.parse(storedSummarizedfile));
       }
 
-      if (storedFlashcards !== "" || storedFlashcards == []) {
+      if (storedFlashcards !== "" && storedFlashcards !== null) {
         await setFlashcards(JSON.parse(storedFlashcards));
       }
       
@@ -202,6 +201,8 @@ function App() {
       }
     }
   }, [messages, lastProcessedMessageIndex, textGenTextOnlyPromptStreaming]);
+
+  console.log(flashcards)
 
   const gotoFlashcard = () => {
     setFlashcard(true);
