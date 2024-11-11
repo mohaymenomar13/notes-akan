@@ -70,7 +70,7 @@ function App() {
               3. <Word Key>
               ..."
           - If an image is present, it will be indicated by the placeholder "[image]".
-        Important: Copy the exact wording of the descriptions as they appear in the text. Do not paraphrase or alter the descriptions in any way.
+        Important: Copy the exact wording of the descriptions as they appear in the text. Do not paraphrase or alter the descriptions in any way. If you have no choice, then do what necessary to avoid 'RECITATION'.
         Content to summarize:
       ${fileContent}
       `;
@@ -158,7 +158,7 @@ function App() {
       const result = await model.generateContentStream(prompt);
 
       for await (const chunk of result.stream) {
-        const chunkText = chunk.text();  
+        const chunkText = chunk.text();
         fullResponse += chunkText;
         setResponse((prev) => prev + chunkText);  
       }
