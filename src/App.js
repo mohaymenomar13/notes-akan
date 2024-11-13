@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
+
 import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import ForgotPass from './pages/ForgotPass';
 import Home from './pages/Home';
 import CreateNote from './pages/CreateNote';
 import NoPage from './pages/NoPage';
+import Profile from './pages/Profile';
 
 function App() {
   return (
@@ -46,6 +48,7 @@ function AppRouter() {
       <Route path="/signup" element={<SignUp />} />
       <Route path="/forgotpass" element={<ForgotPass />} />
       <Route path="/createnote/:note_id" element={<CreateNote />} />
+      <Route path="/profile/:user_id" element={<Profile />} />
       <Route path="*" element={<NoPage />} />
     </Routes>
   );
