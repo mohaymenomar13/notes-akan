@@ -7,9 +7,9 @@ import SignUp from './pages/SignUp';
 import SignIn from './pages/SignIn';
 import ForgotPass from './pages/ForgotPass';
 import Home from './pages/Home';
-import CreateNote from './pages/CreateNote';
 import NoPage from './pages/NoPage';
 import Profile from './pages/Profile';
+import Notes from './pages/Notes';
 
 function App() {
   return (
@@ -47,7 +47,7 @@ function AppRouter() {
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/forgotpass" element={<ForgotPass />} />
-      <Route path="/createnote/:note_id" element={<CreateNote />} />
+      <Route path="/note/:note_id" element={<Notes />} />
       <Route path="/profile/:user_id" element={<Profile />} />
       <Route path="*" element={<NoPage />} />
     </Routes>

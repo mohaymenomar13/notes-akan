@@ -18,12 +18,16 @@ export default function Profile() {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [notes, setNotes] = useState([]);
+    const [publicNotes, setPublicNotes] = useState([]);
     const { user_id } = useParams();
     const navigate = useNavigate();
 
     const [edit, setEdit] = useState(false);
     const [passDia, setPassDia] = useState(false);
     const [notifPass, setNotifPass] = useState(false);
+    const [copDiaOpen, setCopDiaOpen] = useState(false);
+    const [copyNoteId, setCopyNoteId] = useState('');
 
     const editDiaOpen = () => {
         fetchUser();
@@ -43,8 +47,11 @@ export default function Profile() {
     }
 
     useEffect(() => {
-        console.log("useeffects")
+        fetchNotes();
         fetchUser();
+        if (userSession !== user_id) {
+            fetchNotesPublic();
+        }
     },[])
 
     const fetchUser = async () => {
@@ -96,18 +103,79 @@ export default function Profile() {
         setConfirmPassword('');
     }
 
+    const fetchNotes = async () => {
+        try {
+            const params = new URLSearchParams();
+            params.append("user_id", user_id);
+            const response = await axios.get('http://localhost/api/createnote.php', { params });
+            setNotes(response.data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const fetchNotesPublic = async () => {
+        try {
+            const params = new URLSearchParams();
+            params.append("user_id", user_id);
+            const response = await axios.get('http://localhost/api/notespublic.php', { params });
+            setPublicNotes(response.data);
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     const handleLogout = () => {
         document.cookie = "user_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         navigate('/signin');
+    };
+
+    const handleCopDiaOpen = (noteId) => {
+        setCopDiaOpen(true);
+        setCopyNoteId(noteId);
+        handleCopyNoteId(noteId);
+    }
+    const handleCopDiaClose = () => {
+        setCopDiaOpen(false);
+        setCopyNoteId('');
+    }
+
+    const handleCopyNoteId = async (noteId) => {
+        try {
+          await navigator.clipboard.writeText(noteId);
+        } catch (err) {
+          console.error("Failed to copy note ID: ", err);
+        }
     };
 
     return (
         <div>
             <h1>Profile Page</h1> <button onClick={() => navigate('/')}>Home</button>
             <p>{data.name}</p>
-            <p>{data.email}</p>
-            <button onClick={editDiaOpen}>Edit</button>
-            <p>{data.time_created}</p>
+            { userSession === user_id ? (
+                <div>
+                <p>{data.email}</p>
+                <button onClick={editDiaOpen}>Edit</button>
+                <p>{data.time_created}</p>
+                </div>
+            ) : (
+                <div>
+                <h2>Public Notes</h2>
+                {publicNotes.length > 0 && (
+                    <div>
+                    {publicNotes.map((note) => (
+                        <div key={note.note_id}>
+                        <p>{note.title}</p>
+                        <p>{note.summary}</p>
+                        <p>Created at: {note.created_at}</p>
+                        <p>Public: {note.is_public === 1 ? 'Yes' : 'No'}</p>
+                        <button onClick={() => handleCopDiaOpen(note.note_id)}>Copy note id</button>
+                        </div>
+                    ))}
+                    </div>
+                )}
+                </div>
+            )}
             {userSession == user_id && (
             <div>
             <h2>Account Settings</h2>
@@ -124,10 +192,11 @@ export default function Profile() {
                 <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type="password" />
             </label><br/>
             <button onClick={changePassword}>Save Changes</button><br/>
+            <h2>Analytics Overview</h2>
+            <p>Number of Notes: {notes.length}</p>
+            <button onClick={handleLogout}>Logout</button>
             </div>
             )}
-
-            <button onClick={handleLogout}>Logout</button>
 
             <Dialog open={edit} onClose={editDiaClose}>
                 <DialogTitle id="edit-dialog-title">Edit Profile</DialogTitle>
@@ -182,6 +251,23 @@ export default function Profile() {
                         Close
                     </Button>
                 </DialogActions>
+            </Dialog>
+
+            <Dialog
+              open={copDiaOpen}
+              onClose={handleCopDiaClose}
+            >
+              <DialogTitle>Copy Note ID</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  The note ID has been copied to your clipboard.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCopDiaClose} color="primary">
+                  Close
+                </Button>
+              </DialogActions>
             </Dialog>
         </div>
     )

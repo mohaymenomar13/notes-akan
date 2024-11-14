@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -14,6 +15,7 @@ export default function NoteList(props) {
     const [deleteNoteId, setDeleteNoteId] = useState('');
     const [copDiaOpen, setCopDiaOpen] = useState(false);
     const [copyNoteId, setCopyNoteId] = useState('');
+    const navigate = useNavigate();
 
     const handleDelDiaOpen = (noteId) => {
         setDelDiaOpen(true);
@@ -35,17 +37,18 @@ export default function NoteList(props) {
     }
 
     useEffect(() => {
-        fetchNotes();
-    }, [props.user])
-
+      const fetchNotesAsync = async () => {
+        await fetchNotes();
+      };
+      fetchNotesAsync();
+    }, [props.user]);
 
     const fetchNotes = async () => {
         try {
             const params = new URLSearchParams();
-            params.append('user_id', '99297b10e84898151ed30fd408adb0bc');
+            params.append('user_id', props.user);
             const response = await axios.get('http://localhost/api/createnote.php', { params });
             setData(response.data);
-            console.log(response.data, props.user);
         } catch (error) {
             console.error(error);
         }
@@ -56,7 +59,6 @@ export default function NoteList(props) {
             const params = new URLSearchParams();
             params.append('note_id', noteId);
             params.append('user_id', props.user);
-            console.log(noteId, props.user)
             const response = await axios.delete('http://localhost/api/createnote.php', { params });
             fetchNotes();
         } catch (err) {
@@ -82,11 +84,14 @@ export default function NoteList(props) {
     const handleCopyNoteId = async (noteId) => {
         try {
           await navigator.clipboard.writeText(noteId);
-          console.log("Note ID copied to clipboard");
         } catch (err) {
           console.error("Failed to copy note ID: ", err);
         }
     };
+
+    const handleSelectNote = (noteId) => {
+      navigate('/note/'+noteId);
+    }
 
     return (
         <div>
@@ -100,8 +105,7 @@ export default function NoteList(props) {
                             <p>{note.note_id}</p>
                             <p>{note.is_public}</p>
                             <p>{note.created_at}</p>
-                            <button>Select</button>
-                            {/*<button onClick={() => handleDelete(note.note_id)}>Delete</button>*/}
+                            <button onClick={(e) => handleSelectNote(note.note_id)}>Select</button>
                             <button onClick={() => handleDelDiaOpen(note.note_id)}>Delete</button>
                             <button onClick={() => handleIsPublic(note)}>Toggle is_public</button>
                             <button onClick={() => handleCopDiaOpen(note.note_id)}>Copy note id</button>
