@@ -16,7 +16,7 @@ export default function ForgotPass() {
                 }
             });
             console.log(response.data);
-            setMessage(response.data.message); // Set message based on response
+            setMessage(response.data.message);
         } catch (error) {
             if (error.response) {
                 setMessage(error.response.data.message);

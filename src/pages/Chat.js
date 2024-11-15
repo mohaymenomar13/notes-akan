@@ -6,7 +6,7 @@ import axios from 'axios';
 export default function Chat({chatData}) {
     
     const { summary, userSession, messages, setMessages, note_id, handleSaveChat} = chatData;
-    const [newMessage, setNewMessage] = useState([]);
+    const [newMessages, setNewMessages] = useState([]);
     const [input, setInput] = useState('');
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -16,6 +16,10 @@ export default function Chat({chatData}) {
             parts: [{ text: msg.content }]
         })),
     });
+
+    useEffect(() => {
+        handleSaveChat(messages);
+    }, [messages, handleSaveChat]);
 
     const sendMessage = async () => {
         try {
@@ -37,11 +41,10 @@ export default function Chat({chatData}) {
                     } else {
                         updatedMessages.push({ role: 'model', content: botMessageContent });
                     }
+                    setNewMessages(updatedMessages)
                     return updatedMessages;
                 });
-                setNewMessage(messages);
             }
-            handleSaveChat();
         } catch (err) {
             console.error(err);
             chatData.setMessages((prevMessages) => {

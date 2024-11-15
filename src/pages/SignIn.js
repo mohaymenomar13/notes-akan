@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // useNavigate instead of useHistory
+import { useNavigate } from 'react-router-dom'; 
 
 export default function SignIn() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [result, setResult] = useState('');
-    const navigate = useNavigate(); // initialize useNavigate
+    const navigate = useNavigate(); 
 
-    // Check if the user is already signed in by checking the cookie
     useEffect(() => {
         const userSession = document.cookie.split(';').find(cookie => cookie.trim().startsWith('user_session='));
         if (userSession) {
@@ -30,13 +29,13 @@ export default function SignIn() {
                 },
                 withCredentials: true
             });
-            setResult(response.data.message); // Set the result message based on the server response
+            setResult(response.data.message); 
             if (response.data.message === "Sign-in successful") {
-                navigate('/'); // Redirect to the home or dashboard page
+                navigate('/'); 
             }
         } catch (error) {
             if (error.response) {
-                setResult(error.response.data.message); // Log error message from server
+                setResult(error.response.data.message); 
             } else {
                 console.log("Error:", error.message);
             }

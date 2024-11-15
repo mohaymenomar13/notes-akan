@@ -25,12 +25,12 @@ export default function Notes() {
     }, []);
 
     const fetchNote = async () => {
-        console.log("fetchNote")
         try {
             const params = new URLSearchParams();
             params.append('user_id', userSession);
             params.append('note_id', note_id);
             const response = await axios.get('http://localhost/api/note.php', { params });
+            console.log(response.data.flashcards);
             setData(response.data);
             setSummary(response.data.summary);
             setTitle(response.data.title);
@@ -51,30 +51,29 @@ export default function Notes() {
         }
     }
 
-    const handleSaveChat = async (newMessage) => {
-        console.log(newMessage)
-        try {
-            const data = {
-                user_id: userSession,
-                note_id: note_id,
-                chat: JSON.stringify(messages)
-            };
-            const response = await axios.put('http://localhost/api/savechat.php', data);
-            console.log(response.data);
-        } catch (err) {
-            console.error(err);
+    const handleSaveChat = async (newMessages) => {
+        if (newMessages.length > 0) {
+            try {
+                const data = {
+                    user_id: userSession,
+                    note_id: note_id,
+                    chat: JSON.stringify(newMessages)
+                };
+                const response = await axios.put('http://localhost/api/savechat.php', data);
+            } catch (err) {
+                console.error(err);
+            }
         }
     }
 
-    const handleSaveTitle = async (newTitle) => {
+    const handleSaveTitle = async () => {
         try {
             const data = {
                 user_id: userSession,
                 note_id: note_id,
-                title: newTitle
+                title: title
             };
             const response = await axios.put('http://localhost/api/savetitle.php', data);
-            console.log(response);
         } catch (err) {
             console.error(err);
         }
@@ -97,6 +96,7 @@ export default function Notes() {
     }
 
     const toggleEditTitle = () => {
+        handleSaveTitle();
         setEditTitle(!editTitle);
     }
 
@@ -113,7 +113,7 @@ export default function Notes() {
         :
         (<div>
             <button onClick={() => navigate("/")}>Home</button>
-            <div style={{display: "flex"}}>{editTitle ? (<input type='text' value={data.title} onChange={(e) => {handleSaveTitle(e.target.value); fetchNote()}} />) : (<p>{data.title}</p>)}<button onClick={toggleEditTitle}>Edit</button></div>
+            <div style={{display: "flex"}}>{editTitle ? (<input type='text' value={title} onChange={(e) => setTitle(e.target.value)} />) : (<p>{title}</p>)}<button onClick={toggleEditTitle}>Edit</button></div>
             <button onClick={handleChat}>Chat</button>
             <button onClick={handleNote}>Note</button>
             <button onClick={handleFlashcard}>Flashcard</button>

@@ -2,13 +2,28 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
 import { useEffect, useState } from "react";
 
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+
 export default function Flashcard({flashcardData}) {
+    const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
     const { summary, userSession, note_id, flashcards, setFlashcards, fetchNote } = flashcardData;
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
+    const [diaEditFlash, setDiaEditFlash] = useState(false);
 
-    const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const diaEditFlashOpen = () => {
+        setDiaEditFlash(true);
+    }
+    const diaEditFlashClose = () => {
+        setDiaEditFlash(false);
+    }
 
     const handleSaveFlashcards = async (flashCards) => {
         try {
@@ -63,8 +78,8 @@ export default function Flashcard({flashcardData}) {
     return (
         <div>
             <div style={{ border: "solid 1px black" }}>
-                <input type="text" placeholder="question" onChange={(e) => setQuestion(e.target.value)}/><br/>
-                <input type="text" placeholder="answer" onChange={(e) => setAnswer(e.target.value)}/><br/>
+                <input type="text" placeholder="question" value={question} onChange={(e) => setQuestion(e.target.value)}/><br/>
+                <textarea type="text" placeholder="answer" value={answer} onChange={(e) => setAnswer(e.target.value)}/><br/>
                 <button onClick={addFlashcard}>Add Question</button> <br/>
                 <button onClick={generateFlashcards}>Generate Flashcards</button> <br/>
                 <button>Start Reviewing</button>
@@ -87,7 +102,7 @@ export default function Flashcard({flashcardData}) {
                         <td>{card.description}</td>
                         <td>{card.answer}</td>
                         <td>
-                        <button>Edit</button>
+                        <button onClick={diaEditFlashOpen}>Edit</button>
                         <button>Delete</button>
                         </td>
                     </tr>
@@ -95,6 +110,26 @@ export default function Flashcard({flashcardData}) {
                 </tbody>
                 </table>
             </div>
+
+            <Dialog
+              open={diaEditFlash}
+              onClose={diaEditFlashClose}
+            >
+              <DialogTitle>Edit Flashcard</DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                <input type="text" placeholder="Question" />
+                <textarea placeholder="Answer" />
+                <button>Update</button>
+                <button>Close</button>
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={diaEditFlashClose} color="primary">
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
         </div>
     );
 }
