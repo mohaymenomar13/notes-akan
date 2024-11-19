@@ -10,6 +10,8 @@ import Home from './pages/Home';
 import NoPage from './pages/NoPage';
 import Profile from './pages/Profile';
 import Notes from './pages/Notes';
+import Reviewing from './pages/Reviewing';
+import Admin from './pages/Admin';
 
 function App() {
   return (
@@ -48,7 +50,9 @@ function AppRouter() {
       <Route path="/signup" element={<SignUp />} />
       <Route path="/forgotpass" element={<ForgotPass />} />
       <Route path="/note/:note_id" element={<Notes />} />
+      <Route path="/note/:note_id/review" element={<Reviewing />}/>
       <Route path="/profile/:user_id" element={<Profile />} />
+      <Route path="/admin/" element={<Admin />} />
       <Route path="*" element={<NoPage />} />
     </Routes>
   );

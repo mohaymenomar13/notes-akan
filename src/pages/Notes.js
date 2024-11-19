@@ -30,7 +30,6 @@ export default function Notes() {
             params.append('user_id', userSession);
             params.append('note_id', note_id);
             const response = await axios.get('http://localhost/api/note.php', { params });
-            console.log(response.data.flashcards);
             setData(response.data);
             setSummary(response.data.summary);
             setTitle(response.data.title);

@@ -8,21 +8,66 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { useNavigate } from "react-router-dom";
 
 export default function Flashcard({flashcardData}) {
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     const { summary, userSession, note_id, flashcards, setFlashcards, fetchNote } = flashcardData;
     const [question, setQuestion] = useState('');
     const [answer, setAnswer] = useState('');
+    const [editIndex, setEditIndex] = useState();
+    const [newQuestion, setNewQuestion] = useState('');
+    const [newAnswer, setNewAnswer] = useState('');
     const [diaEditFlash, setDiaEditFlash] = useState(false);
+    const [diaDelFlash, setDiaDelFlash] = useState(false);
+    const navigate = useNavigate('');
 
-    const diaEditFlashOpen = () => {
+    const startReviewing = () => {
+      navigate('/note/'+note_id+'/review');
+    }
+
+    const diaDelFlashOpen = (index) => {
+      setEditIndex(index);
+      setNewQuestion(flashcards[index].description);
+      setDiaDelFlash(true);
+    }
+    const diaDelFlashClose = () => {
+      setDiaDelFlash(false);
+      setEditIndex(null);
+    }
+
+    const diaEditFlashOpen = (index) => {
+        setEditIndex(index)
         setDiaEditFlash(true);
+        setNewQuestion(flashcards[index].description);
+        setNewAnswer(flashcards[index].answer);
+        setEditIndex(index);
     }
     const diaEditFlashClose = () => {
         setDiaEditFlash(false);
+    }
+    const handleSaveDelFlash = async () => {
+      const updatedFlashcards = [...flashcards];
+      updatedFlashcards.splice(editIndex, 1);
+      await setFlashcards(updatedFlashcards);
+      handleSaveFlashcards(updatedFlashcards);
+      setEditIndex(null);
+      setNewQuestion('');
+      setNewAnswer('');
+      diaDelFlashClose();
+    }
+
+    const handleSaveEditFlash = async () => {
+      const updatedFlashcards = [...flashcards];
+      updatedFlashcards[editIndex] = { description: newQuestion, answer: newAnswer};
+      await setFlashcards(updatedFlashcards);
+      handleSaveFlashcards(updatedFlashcards);
+      setEditIndex(null);
+      setNewQuestion('');
+      setNewAnswer('');
+      diaEditFlashClose();
     }
 
     const handleSaveFlashcards = async (flashCards) => {
@@ -82,33 +127,20 @@ export default function Flashcard({flashcardData}) {
                 <textarea type="text" placeholder="answer" value={answer} onChange={(e) => setAnswer(e.target.value)}/><br/>
                 <button onClick={addFlashcard}>Add Question</button> <br/>
                 <button onClick={generateFlashcards}>Generate Flashcards</button> <br/>
-                <button>Start Reviewing</button>
+                <button onClick={startReviewing}>Start Reviewing</button>
             </div>
             <div style={{ border: "solid 1px black", width: "800px", minWidth: "500px", maxWidth: "800px" }}> 
             </div>
 
-            <div>
-                <table>
-                <thead>
-                    <tr>
-                    <th>Question</th>
-                    <th>Answer</th>
-                    <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {flashcards.map((card, index) => (
-                    <tr key={index}>
-                        <td>{card.description}</td>
-                        <td>{card.answer}</td>
-                        <td>
-                        <button onClick={diaEditFlashOpen}>Edit</button>
-                        <button>Delete</button>
-                        </td>
-                    </tr>
-                    ))}
-                </tbody>
-                </table>
+              <div>
+                {flashcards.map((card, index) => (
+                <div style={{border: "solid 1px black"}} key={index}>
+                  <p><strong>Question: </strong>{card.description}</p><br/>
+                  <p><strong>Answer: </strong>{card.answer}</p><br/>
+                  <button onClick={(e) => diaEditFlashOpen(index)}>Edit</button>
+                  <button onClick={(e) => diaDelFlashOpen(index)}>Delete</button>
+                </div>
+                ))}
             </div>
 
             <Dialog
@@ -118,15 +150,36 @@ export default function Flashcard({flashcardData}) {
               <DialogTitle>Edit Flashcard</DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                <input type="text" placeholder="Question" />
-                <textarea placeholder="Answer" />
-                <button>Update</button>
-                <button>Close</button>
+                <input type="text" placeholder="Question" value={newQuestion} onChange={(e) => setNewQuestion(e.target.value)}/>
+                <textarea placeholder="Answer" value={newAnswer} onChange={(e) => setNewAnswer(e.target.value)}/>
                 </DialogContentText>
               </DialogContent>
               <DialogActions>
-                <Button onClick={diaEditFlashClose} color="primary">
+                <Button onClick={diaEditFlashClose} color="secondary">
                   Close
+                </Button>
+                <Button onClick={handleSaveEditFlash} color="primary">
+                  Update
+                </Button>
+              </DialogActions>
+            </Dialog>
+
+            <Dialog
+              open={diaDelFlash}
+              onClose={diaDelFlashClose}
+            >
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure you want to delete this flashcard?<br/>
+                  <strong>Question: </strong>{newQuestion}
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={diaDelFlashClose} color="secondary">
+                  Close
+                </Button>
+                <Button onClick={handleSaveDelFlash} color="primary">
+                  Delete
                 </Button>
               </DialogActions>
             </Dialog>

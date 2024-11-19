@@ -9,7 +9,7 @@ export default function Chat({chatData}) {
     const [newMessages, setNewMessages] = useState([]);
     const [input, setInput] = useState('');
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
     const chat = model.startChat({
         history: chatData.messages.map((msg) => ({
             role: msg.role,
