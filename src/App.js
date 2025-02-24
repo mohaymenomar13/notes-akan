@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import './App.css';
 
 import SignUp from './pages/SignUp';
@@ -28,7 +27,8 @@ function AppRouter() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const userSession = document.cookie.split(';').find(cookie => cookie.trim().startsWith('user_session='));
+    // const userSession = document.cookie.split(';').find(cookie => cookie.trim().startsWith('user_session='));
+    const userSession = localStorage.getItem('user_session');
     
     if (userSession) {
       setUser(userSession.replace('user_session=', ''));
@@ -41,6 +41,8 @@ function AppRouter() {
         navigate('/signin');  
       }
     }
+
+    console.log(userSession);
   }, [navigate]);
 
   return (

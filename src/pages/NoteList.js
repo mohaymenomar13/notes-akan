@@ -8,13 +8,25 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { ThemeProvider } from "@emotion/react";
+import theme from './theme';
+import { Box, Grid2, IconButton, Menu, MenuItem, } from "@mui/material";
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import PopupState, { bindMenu, bindTrigger } from "material-ui-popup-state";
+import DeleteIcon from '@mui/icons-material/Delete';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import CopyAllIcon from '@mui/icons-material/CopyAll';
 
 export default function NoteList(props) {
+    const userSession = localStorage.getItem('user_session');
+
     const [data, setData] = useState([]);
     const [delDiaOpen, setDelDiaOpen] = useState(false);
     const [deleteNoteId, setDeleteNoteId] = useState('');
     const [copDiaOpen, setCopDiaOpen] = useState(false);
     const [copyNoteId, setCopyNoteId] = useState('');
+    const apiUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
 
     const handleDelDiaOpen = (noteId) => {
@@ -36,33 +48,33 @@ export default function NoteList(props) {
         setCopyNoteId('');
     }
 
-    useEffect(() => {
-      const fetchNotesAsync = async () => {
-        await fetchNotes();
-      };
-      fetchNotesAsync();
-    }, [props.user]);
-
     const fetchNotes = async () => {
         try {
             const params = new URLSearchParams();
-            params.append('user_id', props.user);
-            const response = await axios.get('http://localhost/api/createnote.php', { params });
+            params.append('user_id', userSession);
+            const response = await axios.get(apiUrl+'createnote.php', { params });
             setData(response.data);
+            console.log(userSession)
+            console.log(response.data);
         } catch (error) {
             console.error(error);
         }
     }
 
+    useEffect(() => {
+      fetchNotes();
+    }, [userSession]);
+
     const handleDelete = async (noteId) => {
         try {
             const params = new URLSearchParams();
             params.append('note_id', noteId);
-            params.append('user_id', props.user);
-            const response = await axios.delete('http://localhost/api/createnote.php', { params });
+            params.append('user_id', userSession);
+            const response = await axios.delete(apiUrl+'createnote.php', { params });
+            console.log(response.data);
             fetchNotes();
         } catch (err) {
-            console.error(err);
+            console.log(err.response.data.message);
         }
     }
 
@@ -71,8 +83,8 @@ export default function NoteList(props) {
           const params = new URLSearchParams();
           params.append('note_id', note.note_id);
           params.append('is_public', note.is_public === 1 ? 0 : 1);
-          params.append('user_id', props.user);
-          const response = await axios.put('http://localhost/api/createnote.php', null, {
+          params.append('user_id', userSession);
+          const response = await axios.put(apiUrl+'createnote.php', null, {
             params,
           });
           fetchNotes();
@@ -95,25 +107,41 @@ export default function NoteList(props) {
 
     return (
         <div>
-            <p>{props.user}</p>
-            <h1>Note List</h1>
             {data.length > 0 ? (
-                <ul>
+                <><Grid2 container rowGap={3} columnGap={2} sx={{padding: 4.5}}>
                     {data.map(note => (
-                        <li key={note.note_id}>
-                            <h3>{note.title}</h3>
-                            <p>{note.note_id}</p>
-                            <p>{note.is_public}</p>
-                            <p>{note.created_at}</p>
-                            <button onClick={(e) => handleSelectNote(note.note_id)}>Select</button>
-                            <button onClick={() => handleDelDiaOpen(note.note_id)}>Delete</button>
-                            <button onClick={() => handleIsPublic(note)}>Toggle is_public</button>
-                            <button onClick={() => handleCopDiaOpen(note.note_id)}>Copy note id</button>
-                        </li>
+                      <Grid2 className="noteCards" container sx={{ justifyContent: "space-between", padding: 1, paddingLeft: 2, width: "350px", borderRadius: "10px", backgroundColor: note.is_public === 1 ? '#98A77C' : '#B6C99B'}}>
+                          <div onClick={() => handleSelectNote(note.note_id)}>
+                            <h2>{note.title}</h2>
+                              <p style={{marginBottom: -15}}>Code: <strong>{note.note_id}</strong></p>
+                              <p style={{marginBottom: -15}}>Time created: <strong>{note.created_at}</strong></p>
+                              <p>Status: <strong >{note.is_public === 1 ? "Public" : "Private"}</strong></p>
+                          </div>
+                          
+                          <Box>
+                            <PopupState variant="popover" popupId="demo-popup-menu">
+                              {(e) => (
+                                <>
+                                  <IconButton {...bindTrigger(e)}>
+                                    <MoreHorizIcon sx={{marginTop: "8px"}} fontSize="large"/>
+                                  </IconButton>
+                                  <Menu {...bindMenu(e)}>
+                                    <MenuItem onClick={() => {handleDelDiaOpen(note.note_id);e.close()}}><Button sx={{color: "red"}} startIcon={<DeleteIcon />}>Delete</Button></MenuItem>
+                                    <MenuItem onClick={() => {handleIsPublic(note);e.close()}}><Button sx={{color: note.is_public === 1 ? "BLUE" : "LIME" }} startIcon={ note.is_public === 1 ? <VisibilityIcon/> : <VisibilityOffIcon/>}>{ note.is_public == 1 ? "PUBLIC" : "PRIVATE" }</Button></MenuItem>
+                                    <MenuItem onClick={() => {handleCopDiaOpen(note.note_id);e.close()}}><Button sx={{color: "black"}} startIcon={<CopyAllIcon/>}>Copy note id</Button></MenuItem>
+                                  </Menu>
+                                </>
+                              )}
+                            </PopupState>
+                          </Box>
+                      </Grid2>
                     ))}
-                </ul>
+                  </Grid2></>
             ) : (
-                <p>No notes found</p>
+                  <h1 style={{
+                    position: "absolute",
+                    top: "50%", right: "50%",
+                    transform: "translate(50%,-50%)"}}>You don't have any notes. <br/>Create one!</h1>
             )}
             <Dialog
               open={delDiaOpen}
@@ -129,7 +157,7 @@ export default function NoteList(props) {
                 <Button onClick={handleDelDiaClose} color="primary">
                   Cancel
                 </Button>
-                <Button onClick={() => {handleDelete(deleteNoteId); handleDelDiaClose();}} color="secondary">
+                <Button sx={{color: "red"}} onClick={() => {handleDelete(deleteNoteId); handleDelDiaClose();}} color="secondary">
                   Delete
                 </Button>
               </DialogActions>

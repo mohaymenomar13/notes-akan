@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import Markdown from 'react-markdown';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import axios from 'axios';
+
+import theme from './theme';
+import { ThemeProvider } from '@emotion/react';
+import { Box, Button, Grid2, IconButton, TextField } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
 
 export default function Chat({chatData}) {
     
-    const { summary, userSession, messages, setMessages, note_id, handleSaveChat} = chatData;
+    const { fetching, setFetching, summary, userSession, messages, setMessages, note_id, handleSaveChat} = chatData;
+    const apiUrl = process.env.REACT_APP_API_URL;
     const [newMessages, setNewMessages] = useState([]);
     const [input, setInput] = useState('');
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
@@ -19,7 +24,7 @@ export default function Chat({chatData}) {
 
     useEffect(() => {
         handleSaveChat(messages);
-    }, [messages, handleSaveChat]);
+    }, [messages]);
 
     const sendMessage = async () => {
         try {
@@ -56,26 +61,33 @@ export default function Chat({chatData}) {
     };
 
     return (
-        <div style={{ border: "solid 1px black", width: "800px", minWidth: "500px", maxWidth: "800px" }}> 
-            <h1>Chat</h1>
-            <ChatBox messages={chatData.messages} />
-            <div style={{position: "fixed", bottom: "10px", width: "800px"}}>
-                <input
-                    type="text"
-                    placeholder="Type your message here..."
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    style={{ width: "30%", padding: "10px" }}
-                />
-                <button onClick={sendMessage} style={{ padding: "10px" }}>Send</button>
+        <>
+        <Grid2 container justifyContent={'center'}>
+        <ThemeProvider theme={theme}>
+            
+            <Grid2 sx={{ height: "70vh", overflowY: "auto", fontSize: 17 , backgroundColor: "#b6c99b", borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 3}} size={5.8}>
+                <ChatBox messages={chatData.messages} />
+            </Grid2>
+
+            <div style={{position: "fixed", bottom: "10px", width: "760px", borderRadius: 20, overflow: "hidden"}}>
+                <Box display={'flex'}>
+                    <TextField value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message here..." multiline fullWidth maxRows={3} variant='filled' sx={{backgroundColor: "#88976C"}}></TextField>
+                    <Grid2 container sx={{backgroundColor: "#88976C"}} justifyContent={'center'}>
+                        <IconButton onClick={sendMessage}>
+                            <SendIcon/>
+                        </IconButton>
+                    </Grid2>
+                </Box>
             </div>
-        </div>
+        </ThemeProvider>
+        </Grid2>
+        </>
     );
 }
 
 function ChatBox({ messages }) {
     return (
-        <div style={{ paddingBottom: "50px" }}>
+        <div style={{  height: "100%", paddingRight: 10, paddingLeft: 10}}>
             <div>
                 {messages.slice(1).map((message, index) => (
                     <div
@@ -88,7 +100,8 @@ function ChatBox({ messages }) {
                         <div
                             style={{
                                 maxWidth: message.role === 'user' ? '70%' : '100%',
-                                padding: '10px',
+                                paddingLeft: '10px',
+                                paddingRight: '10px',
                                 borderRadius: '10px',
                                 backgroundColor: message.role === 'user' ? '#dcf8c6' : '#f1f0f0',
                                 textAlign: 'left',

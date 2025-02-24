@@ -4,34 +4,48 @@ import Markdown from "react-markdown";
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import * as mammoth from 'mammoth';
 import * as pdfjsLib from 'pdfjs-dist';
+import EditIcon from '@mui/icons-material/Edit';
+import DoneIcon from '@mui/icons-material/Done';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { Button, colors, Grid2, styled, TextField } from '@mui/material';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL}/pdf.worker.min.mjs`;
 
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
+
 export default function Note({noteData}) {
-    const { summary, setSummary, userSession, note_id, title, flashcards, messages, setMessages, fetchNote } = noteData;
+    const { fetching, setFetching, chatId, summaryId, summary, setSummary, userSession, note_id, title, flashcards, messages, setMessages, fetchNote} = noteData;
     const [isEditing, setIsEditing] = useState(false);
     const [newSummary, setNewSummary] = useState(summary);
-    const [fetching, setFetching] = useState(false);
     const [preview, setPreview] = useState(summary);
     const textareaRef = useRef(null);
+    const apiUrl = process.env.REACT_APP_API_URL;
+    
+    useEffect(() => {
+        setNewSummary(summary);
+        if (summary.length > 0) {
+            setIsEditing(false);
+        }
+    }, [summary])
 
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    const resizeTextArea = () => {
-        if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto';
-            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
-        }
-    };
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
     const toggleEditMode = () => {
-        resizeTextArea();
         setIsEditing(!isEditing);
         handleSaveNote(newSummary);
     };
 
     const handleSaveNote = async (newSummarize) => {
-        console.log('NEW SUMMARY:\n', newSummarize);
         setPreview(newSummarize);
         setSummary(newSummarize);
         try {
@@ -39,10 +53,12 @@ export default function Note({noteData}) {
                 user_id: userSession,
                 note_id: note_id,
                 title: title,
-                summary: newSummarize
+                summary: newSummarize,
+                summaryId: summaryId,
+                chatId: chatId,
             };
-            const response = await axios.put('http://localhost/api/savenote.php', data);
-            console.log(response.data);
+            const response = await axios.put(apiUrl+'savenote.php', data);
+            console.log(response.data.message);
             fetchNote();
         } catch (err) {
             console.error(err);
@@ -50,7 +66,8 @@ export default function Note({noteData}) {
     };
 
     const handleFileUpload = async (event) => {
-        console.log("----UPLOADING FILE----");
+        setFetching(true);
+        setIsEditing(false);
         const file = event.target.files[0];
         if (!file) return;
 
@@ -158,27 +175,49 @@ export default function Note({noteData}) {
 
     return (
         <div>
-            <div style={{ border: "solid 1px black" }}>
-                <button onClick={toggleEditMode}>
-                    {isEditing ? "View Markdown" : "Edit"}
-                </button> <br/>
-                <input type="file" onChange={handleFileUpload} accept=".pdf,.docx,.txt" /><br/>
-            </div>
-            <div style={{ border: "solid 1px black", width: "800px", minWidth: "500px", maxWidth: "800px" }}> 
-                {isEditing ? (
-                    <textarea
-                        ref={textareaRef}
-                        value={newSummary}
-                        onChange={(e) => {
-                            resizeTextArea();
-                            setNewSummary(e.target.value);
-                            fetchNote();
-                        }}
-                    />
-                ) : (
-                    <Markdown>{preview}</Markdown>
-                )}
-            </div>
+            <Grid2 container columns={11} justifyContent={'center'} spacing={2}>
+                <Grid2 size={2}>
+                </Grid2>
+                <Grid2 size={6} sx={{height: "78vh", overflowY: "auto", fontSize: 17 , backgroundColor: "#CFE1B9", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 3}}>
+                    {isEditing ? (
+                        <TextField
+                            id="standard-multiline-static"
+                            multiline
+                            variant="standard"
+                            fullWidth
+                            value={newSummary}
+                            onChange={(e) => {
+                                setNewSummary(e.target.value);
+                                fetchNote();
+                            }}
+                        />
+                    ) : (
+                        <div style={{marginTop: -25, color: "#5a6351"}}>
+                            <Markdown>{newSummary == '' ? 'CLICK THE EDIT BUTTON TO ADD YOUR NOTE OR UPLOAD YOUR FILE TO AUTOMATICALLY SUMMARIZE YOUR NOTE.' : newSummary}</Markdown>
+                        </div>
+                    )}
+                </Grid2>
+                <Grid2 size={2} spacing={10}>
+                    <Button disabled={fetching} sx={{ fontSize: 20, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={toggleEditMode} startIcon={isEditing ? <DoneIcon/> : <EditIcon/>}><strong>{isEditing ? "Save" : "Edit"}</strong></Button>
+                    <Button
+                        disabled={fetching}
+                        component="label"
+                        role={undefined}
+                        variant="contained"
+                        fullWidth
+                        tabIndex={-1}
+                        startIcon={<CloudUploadIcon />}
+                        sx={{ fontSize: 20}}
+                        >
+                        <strong>Upload files</strong>
+                        <VisuallyHiddenInput
+                            type="file"
+                            onChange={handleFileUpload}
+                            accept=".pdf,.docx,.txt"
+                        />
+                    </Button>
+                </Grid2>
+            </Grid2>
         </div>
     );
 }

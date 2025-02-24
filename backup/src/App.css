@@ -1,0 +1,367 @@
+body {
+  background-color: #E7F5DC;
+  color: #6b755f;
+}
+
+.Button {
+  background-color: red;
+}
+
+.SignInUp {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  height: 100vh; 
+  text-align: center; 
+}
+.SignInUp img {
+  width: 100px;
+  height: 100px;
+  margin-left: 35px;
+}
+.SignIn h2 {
+  margin-top: -10px;
+  margin-bottom: -20px;
+  font-family: cursive;
+}
+.SignIn form {
+  margin-top: 20px;
+  width: 100%; 
+  max-width: 400px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.SignIn a {
+  margin-top: 8px; 
+}
+
+
+.ForgotPass form {
+  width: 100%; 
+  max-width: 400px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.SignUp form {
+  width: 100%; 
+  max-width: 400px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 5vh;
+  margin-right: 5vh;
+}
+
+.noteCards {
+  transition: 0.5s;
+  cursor: pointer;
+  color: #E7F5DC;
+}
+.noteCards:hover {
+  background-color: #b6c99b;
+}
+
+.note {
+  background-color: #b6c99b;
+}
+
+
+.flashcard {
+  width: 80vh;
+  height: 35vh;
+  perspective: 1000px;
+  cursor: pointer;
+  position: relative;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.flashcard .front,
+.flashcard .back {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  left: -2vh;
+  font-size: 18px;
+  border-radius: 8px;
+  padding: 20px;
+  transition: transform 0.6s;
+}
+
+
+.flashcard .front {
+  background-color: #283618;
+  color: #fefae0;
+}
+
+.flashcard .back {
+  background-color: #606c38;
+  color: #dda15e;
+  transform: rotateY(180deg);
+}
+
+.flashcard.flipped .front {
+  transform: rotateY(180deg);
+}
+
+.flashcard.flipped .back {
+  transform: rotateY(0deg);
+}
+
+.navigation {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 40px;
+}
+
+.flashcard button {
+  background-color: #bc6c25;
+  color: #fefae0;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.flashcard button:disabled {
+  background-color: #4a4a4a; 
+  color: #a9a9a9; 
+  cursor: not-allowed; 
+  opacity: 0.7; 
+}
+
+.flashcard button:disabled:hover {
+  background-color: #4a4a4a;  
+}
+
+.flashcard button:hover {
+  background-color: #dda15e;
+}
+
+/* Rating Buttons */
+.rating-buttons {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.rating {
+  background-color: #bc6c25;
+  color: #fefae0;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  margin: 0 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.rating.selected {
+  background-color: #dda15e;
+}
+
+.rating:hover {
+  background-color: #dda15e;
+}
+
+.ProfileTag {
+  margin-bottom: "-50px";
+}
+
+
+/*ADMIN PANEL*/
+
+.admin-panel {
+  font-family: 'Roboto', sans-serif;
+  background-color: #F8F9FA;
+  margin: 0;
+  padding: 0;
+
+  text-align: left;
+  padding: 20px;
+  max-width: 1200px;
+  margin: auto;
+  background-color: #FFFFFF;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+  color: #333333;
+  margin-bottom: 20px;
+}
+
+.section {
+  margin-bottom: 40px;
+}
+
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.table th, .table td {
+  padding: 12px 15px;
+  border: 1px solid #E9ECEF;
+  text-align: left;
+}
+
+.table th {
+  background-color: #F1F1F1;
+  font-weight: bold;
+}
+
+.table tr:nth-child(even) {
+  background-color: #F9F9F9;
+}
+
+.table .status.active {
+  color: #28A745;
+  font-weight: bold;
+}
+
+.table .status.inactive {
+  color: #6C757D;
+  font-weight: bold;
+}
+
+.table .visibility.public {
+  background-color: #D4EDDA;
+  color: #155724;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.table .visibility.private {
+  background-color: #FFF3CD;
+  color: #856404;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+
+.btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn.edit {
+  background-color: #007BFF;
+  color: white;
+}
+
+.btn.edit:hover {
+  background-color: #0056B3;
+}
+
+.btn.delete {
+  background-color: #FF4D4F;
+  color: white;
+}
+
+.btn.delete:hover {
+  background-color: #D9383A;
+}
+
+.btn.visibility-toggle {
+  background-color: #6C757D;
+  color: white;
+}
+
+.btn.visibility-toggle:hover {
+  background-color: #5A6268;
+}
+
+
+.search-bar {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #CCC;
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+
+.analytics-cards {
+  display: flex;
+  gap: 20px;
+}
+
+.card {
+  flex: 1;
+  background-color: #FFFFFF;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.card h3 {
+  margin-bottom: 10px;
+  color: #333333;
+}
+
+.card p {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.search-bar {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #CCC;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+
+.no-results {
+  text-align: center;
+  color: #6C757D;
+  font-style: italic;
+}
+
+.password {
+  font-family: monospace;
+  margin-right: 10px;
+}
+
+.btn.toggle-password {
+  background: #6c757d;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.btn.toggle-password:hover {
+  background: #5a6268;
+}

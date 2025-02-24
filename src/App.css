@@ -1,26 +1,89 @@
 body {
-  text-align: center;
-  display: grid;
-  justify-content: center;
-  align-items: center;
-}
-.SignUp {
-  display: inline-block;
-  border: 1px solid black;
+  background-color: #E7F5DC;
+  color: #6b755f;
 }
 
-.SignIn {
-  display: inline-block;
-  border: 1px solid black;
+* {
+  scrollbar-color: #6b755f #b6c99b; /* Thumb color and track color */
+  scrollbar-width: thin;
 }
-.ForgotPass {
-  display: inline-block;
-  border: 1px solid black;
+
+.Button {
+  background-color: red;
 }
+
+.SignInUp {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  height: 100vh; 
+  text-align: center; 
+}
+.SignInUp img {
+  width: 100px;
+  height: 100px;
+  margin-left: 35px;
+}
+.SignIn h2 {
+  margin-top: -10px;
+  margin-bottom: -20px;
+  font-family: cursive;
+}
+.SignIn form {
+  margin-top: 20px;
+  width: 100%; 
+  max-width: 400px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.SignIn a {
+  margin-top: 8px; 
+}
+
+
+.ForgotPass form {
+  width: 100%; 
+  max-width: 400px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.SignUp form {
+  width: 100%; 
+  max-width: 400px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-left: 5vh;
+  margin-right: 5vh;
+}
+
+.noteCards {
+  transition: 0.5s;
+  cursor: pointer;
+  color: #333333;
+}
+.noteCards:hover {
+  background-color: #b6c99b;
+}
+
+.note {
+  background-color: #b6c99b;
+}
+
 
 .flashcard {
   width: 80vh;
-  height: 50vh;
+  height: 35vh;
   perspective: 1000px;
   cursor: pointer;
   position: relative;
@@ -47,12 +110,12 @@ body {
 
 
 .flashcard .front {
-  background-color: #283618;
+  background-color: #728156;
   color: #fefae0;
 }
 
 .flashcard .back {
-  background-color: #606c38;
+  background-color: #728156;
   color: #dda15e;
   transform: rotateY(180deg);
 }
@@ -83,12 +146,11 @@ body {
   transition: background-color 0.3s;
 }
 
-/* Disabled Button Styling */
 .flashcard button:disabled {
-  background-color: #4a4a4a; /* Darker background for disabled state */
-  color: #a9a9a9; /* Lighter gray color for text */
-  cursor: not-allowed; /* Change cursor to indicate disabled state */
-  opacity: 0.7; /* Slightly transparent to indicate it's disabled */
+  background-color: #4a4a4a; 
+  color: #a9a9a9; 
+  cursor: not-allowed; 
+  opacity: 0.7; 
 }
 
 .flashcard button:disabled:hover {
@@ -125,99 +187,10 @@ body {
   background-color: #dda15e;
 }
 
-/* Dashboard Styling */
-.dashboard {
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #283618;
-  border-radius: 10px;
+.ProfileTag {
+  margin-bottom: "-50px";
 }
 
-/* Input Fields */
-.flashcard input[type="text"], .flashcard textarea, .inputs {
-  width: calc(50% - 10px); /* Adjust width for two inputs */
-  padding: 10px;
-  margin: 10px 5px;
-  border: 1px solid #fefae0;
-  border-radius: 5px;
-  background-color: #606c38;
-  color: #fefae0;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-.flashcard textarea {
-  resize: none;
-  height: 200px;
-  width: 95%;
-}
-
-.flashcard input[type="text"]:focus, textarea {
-  border-color: #dda15e;
-  outline: none;
-}
-
-/* Flashcard Table */
-.flashcard-table {
-  border-collapse: collapse;
-  margin: 20px 0;
-}
-
-.flashcard-table th,
-.flashcard-table td {
-  border: 1px solid #fefae0;
-  padding: 10px;
-  text-align: left;
-}
-
-.flashcard-table th {
-  background-color: #606c38;
-  color: #fefae0;
-}
-
-.flashcard-table tr:nth-child(even) {
-  background-color: #383838;
-}
-
-.flashcard-table tr:hover {
-  background-color: #4a4a4a;
-}
-/* Flashcard.css */
-
-.popup-dialog {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5); /* Dark overlay */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.popup-content {
-  background-color: #283618;
-  padding: 20px;
-  border-radius: 5px;
-  text-align: center;
-}
-
-
-@media (max-width: 768px) {
-  .flashcard-table td{
-    font-size: 1.3vh;
-    width: 40px;
-  }
-  .flashcard {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 200px;
-    height: 150px;
-  }
-}
 
 /*ADMIN PANEL*/
 
@@ -245,7 +218,7 @@ h1, h2 {
   margin-bottom: 40px;
 }
 
-/* Table Styles */
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -293,7 +266,7 @@ h1, h2 {
   font-weight: bold;
 }
 
-/* Button Styles */
+
 .btn {
   padding: 8px 12px;
   border: none;
@@ -329,7 +302,7 @@ h1, h2 {
   background-color: #5A6268;
 }
 
-/* Search Bar */
+
 .search-bar {
   width: 100%;
   padding: 10px;
@@ -338,7 +311,7 @@ h1, h2 {
   margin-bottom: 15px;
 }
 
-/* Analytics Dashboard */
+
 .analytics-cards {
   display: flex;
   gap: 20px;
@@ -363,9 +336,6 @@ h1, h2 {
   font-weight: bold;
 }
 
-/* Existing styles remain the same */
-
-/* Search Bar */
 .search-bar {
   width: 100%;
   padding: 10px;
@@ -375,14 +345,13 @@ h1, h2 {
   font-size: 16px;
 }
 
-/* No results row styling */
+
 .no-results {
   text-align: center;
   color: #6C757D;
   font-style: italic;
 }
 
-/* Styles for Password */
 .password {
   font-family: monospace;
   margin-right: 10px;

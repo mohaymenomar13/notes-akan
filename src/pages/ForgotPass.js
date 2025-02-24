@@ -1,46 +1,64 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import logo from "./assets/logo.png";
+
+import Alert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
+import { Button, colors, createTheme } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
+import { ThemeProvider } from '@emotion/react';
+import theme from './theme';
 
 export default function ForgotPass() {
     const [email, setEmail] = useState('');
-    const [message, setMessage] = useState('');
+    const [Success, setSuccess] = useState(false);
+    const [Error, setError] = useState(false);
+    const [onSubmit, setOnSubmit] = useState(false);
+    const apiUrl = process.env.REACT_APP_API_URL;
+    const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
+        setOnSubmit(true);
         e.preventDefault();
         try {
             const params = new URLSearchParams();
             params.append('email', email);
-            const response = await axios.post('http://localhost/api/forgotpass.php', params.toString(), {
+            const response = await axios.post(apiUrl+'forgotpass.php', params.toString(), {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }
             });
-            console.log(response.data);
-            setMessage(response.data.message);
+            setSuccess(true);
+            console.log(response);
         } catch (error) {
             if (error.response) {
-                setMessage(error.response.data.message);
+                setError(true);
             } else {
                 console.log("Error:", error.message);
             }
         }
+        setOnSubmit(false);
     };
 
     return (
-        <div className="ForgotPass">
-            <h1>Forgot Password</h1>
-            <form onSubmit={handleSubmit}>
-                <input 
-                    type="email" 
-                    onChange={(e) => setEmail(e.target.value)} 
-                    placeholder="Enter your email" 
-                    required 
-                />
-                <button type="submit">Send Reset Link</button>
-            </form>
-            <a href="/signin">Sign in</a><br/>
-            <a href="/signup">Sign Up</a>
-            {message && <p>{message}</p>}
+        <div className="ForgotPass SignInUp">
+            <ThemeProvider theme={theme}>
+                <img src={logo} alt="Description of image" />
+                <h1>Forgot Password</h1>
+                <p>WARNING: THIS FUNCTION IS NOT WORKING PROPERLY.</p>
+                {Error && <Alert variant="filled" severity="error" sx={{marginBottom: 2}}>
+                    Email not found.
+                </Alert>}
+                {Success && <Alert variant="filled" severity="success" sx={{marginBottom: 2}}>
+                    The new password was successfully sent to your email.
+                </Alert>}
+                <form onSubmit={handleSubmit}>
+                    <TextField disabled={Success} error={Error} variant='outlined' type='email' label='Enter your email' onChange={(e) => {setEmail(e.target.value); setError(false)}} />
+                    <Button disabled={Success || onSubmit} sx={{margin: 2}} variant='contained' type='submit'>Send Reset Link</Button>
+                </form>
+                <Button sx={{color: "#728156"}} onClick={() => navigate('/signin')} color='primary'>Sign in</Button>
+                <Button sx={{color: "#728156"}} onClick={() => navigate('/signup')} color='primary'>Sign Up</Button>
+            </ThemeProvider>
         </div>
     );
 }

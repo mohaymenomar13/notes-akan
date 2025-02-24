@@ -7,10 +7,14 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useNavigate } from "react-router-dom";
+import Alert from '@mui/material/Alert';
+import TextField from '@mui/material/TextField';
+import { ThemeProvider } from '@emotion/react';
+import theme from "./theme";
+import logo from "./assets/logo.png";
 
 export default function Admin() {
-  const userSession = document.cookie.split(';').find(cookie => cookie.trim().startsWith('user_session=')).replace('user_session=', '');
-
+  const apiUrl = process.env.REACT_APP_API_URL;
   const [isAdmin, setIsAdmin] = useState(false);
   const [searchUser, setSearchUser] = useState("");
   const [passwordVisibility, setPasswordVisibility] = useState({});
@@ -19,63 +23,43 @@ export default function Admin() {
   const [notes, setNotes] = useState([]);
   const [ownerNames, setOwnerNames] = useState([]);
   const [ownerNotesCount, setOwnerNotesCount] = useState([]);
-  const [openEditDialog, setOpenEditDialog] = useState(false);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState({});
-  const [editFormData, setEditFormData] = useState({ name: '', email: '', password: '' });
-  const [openEditNoteDialog, setOpenEditNoteDialog] = useState(false);
   const [openDeleteNoteDialog, setOpenDeleteNoteDialog] = useState(false);
   const [selectedNote, setSelectedNote] = useState({});
-  const [editNoteFormData, setEditNoteFormData] = useState({ title: '', owner: '', note_id: '', is_public: '' });
+  const [Error, setError] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const navigate = useNavigate();
 
-  const checkAdmin = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      const params = new URLSearchParams();
-      params.append("admin_id", userSession);
-      const response = await axios.get("http://localhost/api/admin.php", {params});
-      setIsAdmin(response.data);
-    } catch (err) {
-      console.error(err);
+        const params = new URLSearchParams();
+        params.append('username', username);
+        params.append('password', password);
+        const response = await axios.post(apiUrl+'admin.php', params.toString());
+        if (response.data == 'success') {
+          setIsAdmin(true);
+        } else {
+          setError(true);
+        }
+    } catch (error) {
+        if (error.response) {
+            setError(true);
+        } else {
+            console.log("Error:", error.message);
+        }
     }
   }
-
-  const handleEditOpen = (user) => {
-    setSelectedUser(user);
-    setEditFormData({
-      name: user.name,
-      email: user.email,
-      password: user.password
-    });
-    setOpenEditDialog(true);
-  };
 
   const handleDeleteOpen = (user) => {
     setSelectedUser(user);
     setOpenDeleteDialog(true);
   };
 
-  const handleEditClose = () => {
-    setOpenEditDialog(false);
-  };
-
   const handleDeleteClose = () => {
     setOpenDeleteDialog(false);
-  };
-
-  const handleEdit = async (user, formData) => {
-    try {
-      const params = new URLSearchParams();
-      params.append("user_id", user.user_id);
-      params.append("name", formData.name);
-      params.append("email", formData.email);
-      params.append("password", formData.password);
-      const response = await axios.put("http://localhost/api/adminusers.php", null, {params});
-    } catch (err) {
-      console.error(err);
-    }
-    fetchUsers();
-    handleEditClose();
   };
 
   const handleDelete = async () => {
@@ -83,7 +67,12 @@ export default function Admin() {
     try {
       const params = new URLSearchParams();
       params.append("user_id", selectedUser.user_id);
-      const response = await axios.delete("http://localhost/api/adminusers.php", {params});
+      const response2 = await axios.post(apiUrl+"adminusers.php", params.toString(), {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        }
+      });
+      const response = await axios.delete(apiUrl+"adminusers.php", {params});
       console.log(response.data);
       fetchUsers();
       fetchNotes();
@@ -92,48 +81,14 @@ export default function Admin() {
     }
     handleDeleteClose();
   };
-
-  const handleEditNoteOpen = (note) => {
-    setSelectedNote(note);
-    setEditNoteFormData({
-      title: note.title,
-      user_id: note.user_id,
-      note_id: note.note_id,
-      is_public: note.is_public
-    });
-    setOpenEditNoteDialog(true);
-  };
   
   const handleDeleteNoteOpen = (note) => {
     setSelectedNote(note);
     setOpenDeleteNoteDialog(true);
   };
   
-  const handleEditNoteClose = () => {
-    setOpenEditNoteDialog(false);
-  };
-  
   const handleDeleteNoteClose = () => {
     setOpenDeleteNoteDialog(false);
-  };
-  
-  const handleEditNote = async () => {
-    console.log('Edit note:', selectedNote, 'with data:', editNoteFormData);
-    try {
-      const params = new URLSearchParams();
-      params.append("note_id", selectedNote.note_id);
-      params.append("new_note_id", editNoteFormData.note_id);
-      params.append("user_id", selectedNote.user_id);
-      params.append("new_user_id", editNoteFormData.user_id);
-      params.append("title", editNoteFormData.title);
-      params.append("is_public", editNoteFormData.is_public);
-      const response = await axios.put("http://localhost/api/adminnotes.php", null, {params});
-      console.log(response.data);
-    } catch (err) {
-      console.error(err);
-    }
-    fetchNotes();
-    handleEditNoteClose();
   };
   
   const handleDeleteNote = async () => {
@@ -142,7 +97,7 @@ export default function Admin() {
       const params = new URLSearchParams();
       params.append("note_id", selectedNote.note_id);
       params.append("user_id", selectedNote.user_id);
-      const response = await axios.delete("http://localhost/api/adminnotes.php", {params});
+      const response = await axios.delete(apiUrl+"adminnotes.php", {params});
       console.log(response.data);
     } catch (err) {
       console.error(err);
@@ -153,8 +108,9 @@ export default function Admin() {
 
   const fetchUsers = async() => {
     try {
-      const response = await axios.get('http://localhost/api/adminusers.php');
+      const response = await axios.get(apiUrl+'adminusers.php');
       setUsers(response.data);
+      console.log(response.data);
     } catch (err) {
       console.error(err);
     }
@@ -162,7 +118,7 @@ export default function Admin() {
 
   const fetchNotes = async() => {
     try {
-      const response = await axios.get('http://localhost/api/adminnotes.php');
+      const response = await axios.get(apiUrl+'adminnotes.php');
       setNotes(response.data);
     } catch (err) {
       console.error(err);
@@ -172,7 +128,6 @@ export default function Admin() {
   useEffect(() => {
     fetchNotes();
     fetchUsers();
-    checkAdmin();
   },[])
 
   useEffect(() => {
@@ -182,7 +137,7 @@ export default function Admin() {
         try {
           const params = new URLSearchParams();
           params.append("user_id", note.user_id);
-          const response = await axios.get('http://localhost/api/fetchname.php', {params});
+          const response = await axios.get(apiUrl+'fetchname.php', {params});
           ownerNamesObj[note.user_id] = response.data;
         } catch (err) {
           console.error(err);
@@ -229,8 +184,21 @@ export default function Admin() {
     {!isAdmin ? 
       (
       <div>
-        <p>You don't have permission to enter to this page.</p><br/>
-        <button onClick={() => navigate("/")}>Back to Home</button>
+        <div className="SignIn SignInUp">
+            <ThemeProvider theme={theme}>
+              <img src={logo} alt="Description of image" /><br/>
+              <h2>ADMIN</h2>
+              <p>Sign In</p>
+              <form onSubmit={handleSubmit}>
+                  {Error && <Alert variant="filled" severity="error" sx={{marginBottom: 2}}>
+                      Invalid username or password. Please try again.
+                  </Alert>}
+                  <TextField error={Error} sx={{marginBottom: 2, width: 250}} variant="outlined" label="Username" value={username} onChange={(e) => {setUsername(e.target.value); setError(false)}} required />
+                  <TextField error={Error} sx={{marginBottom: 2, width: 250}} variant="outlined" label="Password" type="password" value={password} onChange={(e) => {setPassword(e.target.value); setError(false)}} required />
+                  <Button sx={{marginBottom: 2}} type="submit" variant="contained">Sign In</Button>
+              </form>
+            </ThemeProvider>
+        </div>
       </div>
       )
       :
@@ -283,7 +251,7 @@ export default function Admin() {
                 <tr key={index}>
                   <td>{user.name}</td>
                   <td>{user.email}</td>
-                  <td>{user.time_created}</td>
+                  <td>{user.created_at}</td>
                   <td>
                     <span className="password">
                       {passwordVisibility[index] ? user.password : "••••••••••"}
@@ -296,7 +264,6 @@ export default function Admin() {
                     </button>
                   </td>
                   <td>
-                    <button className="btn edit" onClick={() => handleEditOpen(user)}>Edit</button>
                     <button className="btn delete" onClick={() => handleDeleteOpen(user)}>Delete</button>
                   </td>
                 </tr>
@@ -312,31 +279,16 @@ export default function Admin() {
         </table>
       </section>
 
-      <Dialog open={openEditDialog} onClose={handleEditClose} aria-labelledby="edit-dialog-title" aria-describedby="edit-dialog-description">
-        <DialogContent>
-          <DialogContentText id="edit-dialog-description">
-            Edit User Details
-          </DialogContentText>
-          <input  type="text"  placeholder="name"  value={editFormData.name}  onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} /><br/>
-          <input type="email" placeholder="email" value={editFormData.email} onChange={(e) => setEditFormData({...editFormData, email: e.target.value})} /><br/>
-          <input type="text" placeholder="password" value={editFormData.password} onChange={(e) => setEditFormData({...editFormData, password: e.target.value})} />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditClose}>Cancel</Button>
-          <Button onClick={() => handleEdit(selectedUser, editFormData)}>Edit</Button>
-        </DialogActions>
-      </Dialog>
-
       <Dialog
         open={openDeleteDialog}
         onClose={handleDeleteClose}
         aria-labelledby="delete-dialog-title"
         aria-describedby="delete-dialog-description"
       >
-        <DialogContent>
-          <DialogContentText id="delete-dialog-description">
-            Are you sure you want to delete <strong>{selectedUser.name}</strong>?
-          </DialogContentText>
+      <DialogContent>
+        <DialogContentText id="delete-dialog-description">
+          Are you sure you want to delete <strong>{selectedUser.name}</strong>?
+        </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleDeleteClose}>Cancel</Button>
@@ -378,7 +330,6 @@ export default function Admin() {
                   </td>
                   <td>{note.created_at}</td>
                   <td>
-                    <button className="btn edit" onClick={() => handleEditNoteOpen(note)}>Edit</button>
                     <button className="btn delete" onClick={() => handleDeleteNoteOpen(note)}>Delete</button>
                   </td>
                 </tr>
@@ -393,24 +344,6 @@ export default function Admin() {
           </tbody>
         </table>
       </section>
-
-      <Dialog open={openEditNoteDialog} onClose={handleEditNoteClose} aria-labelledby="edit-note-dialog-title" aria-describedby="edit-note-dialog-description"
-      >
-        <DialogContent>
-          <DialogContentText id="edit-note-dialog-description">
-            Edit Note Details
-          </DialogContentText>
-          <input type="text" placeholder="title" value={editNoteFormData.title} onChange={(e) => setEditNoteFormData({...editNoteFormData, title: e.target.value})} /><br/>
-          <input type="text" placeholder="owner" value={editNoteFormData.user_id} onChange={(e) => setEditNoteFormData({...editNoteFormData, user_id: e.target.value})} /><br/>
-          <input type="text" placeholder="note_id" value={editNoteFormData.note_id} onChange={(e) => setEditNoteFormData({...editNoteFormData, note_id: e.target.value})} /><br/>
-          <select value={editNoteFormData.is_public} onChange={(e) => setEditNoteFormData({...editNoteFormData, is_public: e.target.value})}><option value="1">Public</option><option value="0">Private</option>
-          </select>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditNoteClose}>Cancel</Button>
-          <Button onClick={() => handleEditNote(selectedNote, editNoteFormData)}>Edit</Button>
-        </DialogActions>
-      </Dialog>
 
       <Dialog open={openDeleteNoteDialog} onClose={handleDeleteNoteClose} aria-labelledby="delete-note-dialog-title" aria-describedby="delete-note-dialog-description">
         <DialogContent>

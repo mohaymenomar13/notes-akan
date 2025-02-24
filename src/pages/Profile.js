@@ -9,8 +9,14 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 
+import theme from './theme';
+import { Avatar, Box, Grid2, IconButton, Menu, MenuItem, TextField, ThemeProvider } from '@mui/material';
+import HomeIcon from '@mui/icons-material/Home';
+import PopupState, { bindMenu, bindTrigger } from 'material-ui-popup-state';
+
 export default function Profile() {
-    const userSession = document.cookie.split(';').find(cookie => cookie.trim().startsWith('user_session=')).replace('user_session=', '');
+    // const userSession = document.cookie.split(';').find(cookie => cookie.trim().startsWith('user_session=')).replace('user_session=', '');
+    const userSession = localStorage.getItem('user_session');
     const [data, setData] = useState('');
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
@@ -20,6 +26,7 @@ export default function Profile() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [notes, setNotes] = useState([]);
     const [publicNotes, setPublicNotes] = useState([]);
+    const apiUrl = process.env.REACT_APP_API_URL;
     const { user_id } = useParams();
     const navigate = useNavigate();
 
@@ -58,7 +65,7 @@ export default function Profile() {
         try {
             const params = new URLSearchParams();
             params.append("user_id", user_id);
-            const response = await axios.get('http://localhost/api/profile.php', { params });
+            const response = await axios.get(apiUrl+'profile.php', { params });
             setData(response.data);
             setEmail(response.data.email);
             setName(response.data.name);
@@ -74,7 +81,7 @@ export default function Profile() {
             params.append("user_id", user_id);
             params.append("name", name);
             params.append("email", email);
-            const response = await axios.put('http://localhost/api/profile.php', null, { params });
+            const response = await axios.put(apiUrl+'profile.php', null, { params });
             editDiaClose();
             fetchUser();
         } catch (err) {
@@ -89,7 +96,7 @@ export default function Profile() {
                 params.append("user_id", user_id);
                 params.append("newPassword", newPassword);
                 params.append("currentPassword", password);
-                await axios.put('http://localhost/api/changepass.php', null, { params });
+                await axios.put(apiUrl+'changepass.php', null, { params });
                 fetchUser();
                 setNotifPass(true);
             } catch (err) {
@@ -107,7 +114,7 @@ export default function Profile() {
         try {
             const params = new URLSearchParams();
             params.append("user_id", user_id);
-            const response = await axios.get('http://localhost/api/createnote.php', { params });
+            const response = await axios.get(apiUrl+'createnote.php', { params });
             setNotes(response.data);
         } catch (err) {
             console.error(err);
@@ -118,7 +125,7 @@ export default function Profile() {
         try {
             const params = new URLSearchParams();
             params.append("user_id", user_id);
-            const response = await axios.get('http://localhost/api/notespublic.php', { params });
+            const response = await axios.get(apiUrl+'notespublic.php', { params });
             setPublicNotes(response.data);
         } catch (err) {
             console.error(err);
@@ -126,7 +133,8 @@ export default function Profile() {
     }
 
     const handleLogout = () => {
-        document.cookie = "user_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        // document.cookie = "user_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        localStorage.removeItem('user_session');
         navigate('/signin');
     };
 
@@ -150,32 +158,66 @@ export default function Profile() {
 
     return (
         <div>
-            <h1>Profile Page</h1> <button onClick={() => navigate('/')}>Home</button>
-            <p>{data.name}</p>
-            { userSession === user_id ? (
-                <div>
-                <p>{data.email}</p>
-                <button onClick={editDiaOpen}>Edit</button>
-                <p>{data.time_created}</p>
-                </div>
-            ) : (
-                <div>
-                <h2>Public Notes</h2>
-                {publicNotes.length > 0 && (
-                    <div>
-                    {publicNotes.map((note) => (
-                        <div key={note.note_id}>
-                        <p>{note.title}</p>
-                        <p>{note.summary}</p>
-                        <p>Created at: {note.created_at}</p>
-                        <p>Public: {note.is_public === 1 ? 'Yes' : 'No'}</p>
-                        <button onClick={() => handleCopDiaOpen(note.note_id)}>Copy note id</button>
+        <ThemeProvider theme={theme}>
+            
+            <Grid2 justifySelf={"center"} width={800} sx={{padding: 2}}>
+                <Grid2 justifyContent={"space-between"} sx={{marginRight: 5}} container>
+                    <Grid2 container>
+                        <h1>Profile Page</h1>
+                    </Grid2>
+                    <IconButton onClick={() => navigate("/")}><HomeIcon sx={{ fontSize: 50 }}/></IconButton>
+                </Grid2>
+                <Grid2 display={'flex'} alignItems={'center'}>
+                    <Box><Avatar sx={{width: 70, height: 70, marginRight: 2}}></Avatar></Box>
+                    <Box>
+                        { userSession === user_id ? (
+                            <div>
+                            <p style={{marginBottom: -15}}>{data.name}</p>
+                            <p style={{marginBottom: 5}}>{data.email}</p>
+                            <Button variant='contained' onClick={editDiaOpen}>Edit</Button>
+                            </div>
+                        ) : (
+                            <>
+                                <h2 >{data.name}</h2>
+                            </>
+                        )}
+                    </Box>
+                </Grid2>
+                <Grid2>
+                { userSession !== user_id && (
+                        <div>
+                        <h2>Public Notes</h2>
+                            {publicNotes.length > 0 && (
+                                <div>
+                                {publicNotes.map((note) => (
+                                    <Grid2 className="noteCards" sx={{ justifyContent: "space-between", padding: 1, paddingLeft: 2, marginBottom: 2, borderRadius: "10px", backgroundColor: note.is_public === 1 ? '#98A77C' : '#B6C99B'}}>
+                                        <div>
+                                        <h2>{note.title}</h2>
+                                            <p style={{marginBottom: -15}}>Code: <strong>{note.note_id}</strong></p>
+                                            <p>Total Flashcards: <strong>{JSON.parse(note.flashcards) !== null ? JSON.parse(note.flashcards).length : "0"}</strong></p>
+                                        </div>
+                                        <Button variant='contained' sx={{backgroundColor: "#CFE1B9", color: "#728156"}}>Copy Code</Button>
+                                    </Grid2>
+                                ))}
+                                </div>
+                            )}
                         </div>
-                    ))}
-                    </div>
-                )}
+                    )}
+                </Grid2>
+                {userSession == user_id && (
+                <div>
+                <h2>Account Settings</h2>
+                    <TextField sx={{marginBottom: 2}} fullWidth variant='outlined' label="Current Password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password"/>
+                    <TextField sx={{marginBottom: 2}} fullWidth variant='outlined' label="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password"/>
+                    <TextField sx={{marginBottom: 2}} fullWidth variant='outlined' label="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type="password"/>
+                    <Button variant='contained' onClick={changePassword}>Save Changes</Button>
+                <h2>Analytics Overview</h2>
+                <p>Number of Notes: {notes.length}</p>
+                <Button variant='contained' onClick={handleLogout}>Logout</Button>
                 </div>
-            )}
+                )}
+            </Grid2>
+            {/* <p>{data.name}</p>
             {userSession == user_id && (
             <div>
             <h2>Account Settings</h2>
@@ -196,24 +238,13 @@ export default function Profile() {
             <p>Number of Notes: {notes.length}</p>
             <button onClick={handleLogout}>Logout</button>
             </div>
-            )}
+            )} */}
 
             <Dialog open={edit} onClose={editDiaClose}>
                 <DialogTitle id="edit-dialog-title">Edit Profile</DialogTitle>
                 <DialogContent>
-                    <DialogContentText>
-                        Edit your profile information here.
-                    </DialogContentText>
-                    <form>
-                        <label>
-                            Name:
-                            <input type="text" onChange={(e) => setName(e.target.value)} placeholder={data.name} />
-                        </label>
-                        <label>
-                            Email:
-                            <input type="text" onChange={(e) => setEmail(e.target.value)} placeholder={data.email}/>
-                        </label>
-                    </form>
+                        <TextField fullWidth sx={{marginTop: 2}} label="Name" value={name} onChange={(e) => setName(e.target.value)} placeholder={data.name} />
+                        <TextField fullWidth sx={{marginTop: 2}} label="Email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={data.email}/>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={editDiaClose} color="primary">
@@ -269,6 +300,7 @@ export default function Profile() {
                 </Button>
               </DialogActions>
             </Dialog>
+        </ThemeProvider>
         </div>
     )
 }

@@ -1,46 +1,56 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import logo from "./assets/logo.png";
+
+import TextField from '@mui/material/TextField';
+import { Button, createTheme } from '@mui/material';
+import { ThemeProvider } from '@emotion/react';
+import theme from './theme';
+
 export default function SignUp(props) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [data, setData] = useState([]);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(null);
+    const [Error, setError] = useState(false);
+    const apiUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+      e.preventDefault();
         try {
           const params = new URLSearchParams();
             params.append('name', name);
             params.append('email', email);
             params.append('password', password);
-            const response = await axios.post('http://localhost/api/signup.php', params.toString(), {
+            const response = await axios.post(apiUrl+'signup.php', params.toString(), {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 withCredentials: true
             });
-          setSuccess('Record created successfully');
+            console.log(response.data);
+            localStorage.setItem('user_session', response.data.user_id);
+            console.log('User session set in local storage:', response.data.user_id);
           navigate('/');
         } catch (error) {
-          setError('Error creating record');
-          console.error(error);
+          console.log(error);
         }
       };
 
     return (
-        <div className='SignUp'>
-            <h1>SignUp</h1>
-            <form onSubmit={handleSubmit}>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" />
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" />
-                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" />
-                <button type="submit">Submit</button>
-            </form>
-            <p>Do have account? <a href="/signin">Sign In</a></p>
-            <a href="/forgotpass">Forgot Password</a>
+        <div className='SignUp SignInUp'>
+          <ThemeProvider theme={theme}>
+              <img src={logo} alt="Description of image" />
+              <h1>SignUp</h1>
+              <form onSubmit={handleSubmit}>
+                  <TextField error={Error} sx={{marginBottom: 2, width: 250}} variant="outlined" label="Name" value={name} onChange={(e) => {setName(e.target.value); setError(false)}} required />
+                  <TextField error={Error} sx={{marginBottom: 2, width: 250}} variant="outlined" label="Email" value={email} onChange={(e) => {setEmail(e.target.value); setError(false)}} required />
+                  <TextField type='password' error={Error} sx={{marginBottom: 2, width: 250}} variant="outlined" label="Password" value={password} onChange={(e) => {setPassword(e.target.value); setError(false)}} required />
+                  <Button sx={{margin: 2}} variant='contained' type='submit' color='primary'>Sign Up</Button>
+              </form>
+              <p>Do have account? <a href='#' onClick={() => navigate('/signin')}>Sign In</a></p>
+          </ThemeProvider>
         </div>
     )
 }
