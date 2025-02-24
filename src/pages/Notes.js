@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Chat from './Chat.js';
 import Note from './Note.js';
 import Flashcard from './Flashcard.js';
-import { Box, Button, Grid2, IconButton, Tab, Tabs, TextField } from '@mui/material';
+import { Backdrop, Box, Button, CircularProgress, Grid2, IconButton, Tab, Tabs, TextField } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import EditIcon from '@mui/icons-material/Edit';
 import theme from './theme.js';
@@ -12,6 +12,7 @@ import { ThemeProvider } from '@emotion/react';
 import AssistantIcon from '@mui/icons-material/Assistant';
 import NoteIcon from '@mui/icons-material/Note';
 import StyleIcon from '@mui/icons-material/Style';
+import { Scale } from '@mui/icons-material';
 
 export default function Notes() {
     // const userSession = document.cookie.split(';').find(cookie => cookie.trim().startsWith('user_session=')).replace('user_session=', '');
@@ -143,9 +144,15 @@ export default function Notes() {
         :
         (<div>
             <ThemeProvider theme={theme}>
+                <Backdrop
+                    sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+                    open={title == ""}
+                >
+                    <CircularProgress color="inherit" />
+                </Backdrop>
                 <Grid2 justifyContent={"space-between"} sx={{marginRight: 5, marginLeft: 5}} container>
-                    <Grid2 container>
-                        {editTitle ? (<TextField color='primary' value={title} onChange={(e) => setTitle(e.target.value)}></TextField>) : (<h1>{title}</h1>)}
+                    <Grid2 container sx={{width: "28vh", fontSize: "1.5vh"}}>
+                        {editTitle ? (<TextField  sx={{width: "18vh"}} color='primary' value={title} onChange={(e) => setTitle(e.target.value)}></TextField>) : (<h1>{title.slice(0, 14)}</h1>)}
                         <IconButton onClick={toggleEditTitle}><EditIcon sx={{fontSize: 40}}/></IconButton>
                     </Grid2>
                     <IconButton onClick={() => navigate("/")}><HomeIcon sx={{ fontSize: 50 }}/></IconButton>
@@ -157,9 +164,9 @@ export default function Notes() {
                         <Tab disabled={fetching} label="Flashcards" icon={<StyleIcon />} />
                     </Tabs>
                 </Grid2>
-                {chat && <Chat chatData={chatData}/>}
-                {note && <Note noteData={noteData} />}
-                {flashcard && <Flashcard flashcardData={flashcardData} />}
+                    {chat && <Chat chatData={chatData}/>}
+                    {note && <Note noteData={noteData} />}
+                    {flashcard && <Flashcard flashcardData={flashcardData} />}
             </ThemeProvider>
         </div>)
         }

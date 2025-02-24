@@ -54,8 +54,6 @@ export default function NoteList(props) {
             params.append('user_id', userSession);
             const response = await axios.get(apiUrl+'createnote.php', { params });
             setData(response.data);
-            console.log(userSession)
-            console.log(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -118,7 +116,7 @@ export default function NoteList(props) {
                               <p>Status: <strong >{note.is_public === 1 ? "Public" : "Private"}</strong></p>
                           </div>
                           
-                          <Box>
+                          <Box sx={{ position: window.innerWidth < 500 && "absolute", left: "75%"}}>
                             <PopupState variant="popover" popupId="demo-popup-menu">
                               {(e) => (
                                 <>

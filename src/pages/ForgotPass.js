@@ -45,7 +45,6 @@ export default function ForgotPass() {
             <ThemeProvider theme={theme}>
                 <img src={logo} alt="Description of image" />
                 <h1>Forgot Password</h1>
-                <p>WARNING: THIS FUNCTION IS NOT WORKING PROPERLY.</p>
                 {Error && <Alert variant="filled" severity="error" sx={{marginBottom: 2}}>
                     Email not found.
                 </Alert>}

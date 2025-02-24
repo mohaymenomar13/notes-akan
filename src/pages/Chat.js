@@ -65,11 +65,11 @@ export default function Chat({chatData}) {
         <Grid2 container justifyContent={'center'}>
         <ThemeProvider theme={theme}>
             
-            <Grid2 sx={{ height: "70vh", overflowY: "auto", fontSize: 17 , backgroundColor: "#b6c99b", borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 3}} size={5.8}>
+            <Grid2 sx={{ height: "76vh", width: window.innerWidth < 500 ? "100%":"60%",overflowY: "auto", fontSize: 17 , backgroundColor: "#b6c99b", borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 3}} size={5.8}>
                 <ChatBox messages={chatData.messages} />
             </Grid2>
 
-            <div style={{position: "fixed", bottom: "10px", width: "760px", borderRadius: 20, overflow: "hidden"}}>
+            <div style={{position: "fixed", bottom: "0px", width: window.innerWidth < 500 ? "100%":"60%", borderRadius: 20, overflow: "hidden"}}>
                 <Box display={'flex'}>
                     <TextField value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message here..." multiline fullWidth maxRows={3} variant='filled' sx={{backgroundColor: "#88976C"}}></TextField>
                     <Grid2 container sx={{backgroundColor: "#88976C"}} justifyContent={'center'}>

@@ -7,7 +7,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 import EditIcon from '@mui/icons-material/Edit';
 import DoneIcon from '@mui/icons-material/Done';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { Button, colors, Grid2, styled, TextField } from '@mui/material';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import { Button, colors, Grid2, SpeedDial, SpeedDialAction, styled, TextField } from '@mui/material';
 pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL}/pdf.worker.min.mjs`;
 
 const VisuallyHiddenInput = styled('input')({
@@ -28,6 +29,7 @@ export default function Note({noteData}) {
     const [newSummary, setNewSummary] = useState(summary);
     const [preview, setPreview] = useState(summary);
     const textareaRef = useRef(null);
+    const fileInputRef = useRef(null);
     const apiUrl = process.env.REACT_APP_API_URL;
     
     useEffect(() => {
@@ -173,12 +175,17 @@ export default function Note({noteData}) {
         });
     };
 
+    const handleFileUploadClick = () => {
+        fileInputRef.current?.click();
+        console.log("Upload")
+    };
+
     return (
         <div>
             <Grid2 container columns={11} justifyContent={'center'} spacing={2}>
-                <Grid2 size={2}>
+                <Grid2 size={2} hidden={window.innerWidth < 500}>
                 </Grid2>
-                <Grid2 size={6} sx={{height: "78vh", overflowY: "auto", fontSize: 17 , backgroundColor: "#CFE1B9", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 3}}>
+                <Grid2 size={6} sx={{ height: "81vh", width: window.innerWidth < 500 ? "100%":"60%", overflowY: "auto", fontSize: 17 , backgroundColor: "#CFE1B9", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 3}}>
                     {isEditing ? (
                         <TextField
                             id="standard-multiline-static"
@@ -192,12 +199,12 @@ export default function Note({noteData}) {
                             }}
                         />
                     ) : (
-                        <div style={{marginTop: -25, color: "#5a6351"}}>
+                        <div style={{marginTop: -25, color: "#5a6351", marginBottom: 100}}>
                             <Markdown>{newSummary == '' ? 'CLICK THE EDIT BUTTON TO ADD YOUR NOTE OR UPLOAD YOUR FILE TO AUTOMATICALLY SUMMARIZE YOUR NOTE.' : newSummary}</Markdown>
                         </div>
                     )}
                 </Grid2>
-                <Grid2 size={2} spacing={10}>
+                <Grid2 size={2} spacing={10} hidden={window.innerWidth < 500}>
                     <Button disabled={fetching} sx={{ fontSize: 20, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={toggleEditMode} startIcon={isEditing ? <DoneIcon/> : <EditIcon/>}><strong>{isEditing ? "Save" : "Edit"}</strong></Button>
                     <Button
                         disabled={fetching}
@@ -211,12 +218,33 @@ export default function Note({noteData}) {
                         >
                         <strong>Upload files</strong>
                         <VisuallyHiddenInput
+                            ref={fileInputRef}
                             type="file"
                             onChange={handleFileUpload}
                             accept=".pdf,.docx,.txt"
                         />
                     </Button>
                 </Grid2>
+                <SpeedDial
+                    ariaLabel="SpeedDial basic example"
+                    sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                    icon={<SpeedDialIcon />}
+                    hidden={window.innerWidth > 500}
+                    disabled={fetching}
+                >
+                    <SpeedDialAction
+                        key={"Upload File"}
+                        icon={<CloudUploadIcon />}
+                        tooltipTitle={"Upload File"}
+                        onClick={handleFileUploadClick}
+                    />
+                    <SpeedDialAction
+                        key={isEditing ? "Save" : "Edit"}
+                        icon={isEditing ? <DoneIcon/> : <EditIcon/>}
+                        tooltipTitle={isEditing ? "Save" : "Edit"}
+                        onClick={toggleEditMode}
+                    />
+                </SpeedDial>
             </Grid2>
         </div>
     );

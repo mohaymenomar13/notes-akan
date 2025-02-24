@@ -1,4 +1,4 @@
-import { Box, Button, Grid2, IconButton, LinearProgress, Paper, styled, TextField, ThemeProvider } from "@mui/material";
+import { Backdrop, Box, Button, CircularProgress, Grid2, IconButton, LinearProgress, Paper, styled, TextField, ThemeProvider } from "@mui/material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import Markdown from "react-markdown";
@@ -134,6 +134,12 @@ export default function Reviewing() {
     return (
         <div>
         <ThemeProvider theme={theme}>
+            <Backdrop
+                sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+                open={title == ""}
+            >
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Grid2 justifyContent={"space-between"} sx={{marginRight: 5, marginLeft: 5}} container>
                 <Grid2 container>
                     <h1>{title}</h1>
@@ -149,7 +155,7 @@ export default function Reviewing() {
             (<>            
             <Grid2 container display={'grid'}>
                 <Grid2>
-                    <div className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={() => setIsFlipped(!isFlipped)}>
+                    <div style={{width: window.innerWidth < 500 ? "100%":"80vh"}} className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={() => setIsFlipped(!isFlipped)}>
                         <Markdown className="front">{randomizedFlashcards[currentIndex].description}</Markdown>
                         <Markdown className="back">{randomizedFlashcards[currentIndex].answer}</Markdown>
                     </div>
@@ -185,7 +191,7 @@ export default function Reviewing() {
             (
                 <>
                     <Grid2 container justifyContent={'center'}>
-                        <Grid2 sx={{ padding: 2, fontSize: 17 , backgroundColor: "#b6c99b", borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 3}} size={6.4}>
+                        <Grid2 sx={{ width: window.innerWidth < 500 ? "100%":"60%", padding: 2, fontSize: 17 , backgroundColor: "#b6c99b", borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 3}} size={6.4}>
                             <Box sx={{ borderRadius: 5, padding: 1, backgroundColor: "#E7F5DC", color: "#728156", marginBottom: 2, }}>
                                 <p><strong>Score: </strong>{calculateScore()} / {flashcards.length}</p>
                                 <p><strong>Percentage: </strong>{calculatePercentage()}%</p>
@@ -193,7 +199,7 @@ export default function Reviewing() {
                             </Box>
                             <h2>Questions you found difficult:</h2>
                         </Grid2>
-                        <Grid2 sx={{ padding: 2, fontSize: 17 , backgroundColor: "#b6c99b"}} size={6.4}>
+                        <Grid2 sx={{ width: window.innerWidth < 500 ? "100%":"60%", padding: 2, fontSize: 17 , backgroundColor: "#b6c99b"}} size={6.4}>
                             {badQuestions.length > 0 ? (
                                 badQuestions.map((card, index) => (
                                     <Box sx={{ color: "white", borderRadius: 5, padding: 1, backgroundColor: "#E7F5DC", color: "#728156", marginBottom: 2, }}>

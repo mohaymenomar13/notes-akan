@@ -9,7 +9,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useNavigate } from "react-router-dom";
-import { Box, Checkbox, FormControlLabel, Grid2, TextField } from "@mui/material";
+import { Box, Checkbox, FormControlLabel, Grid2, SpeedDial, SpeedDialAction, SpeedDialIcon, TextField } from "@mui/material";
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import AddIcon from '@mui/icons-material/Add';
 import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
@@ -18,7 +18,7 @@ import { CheckBox } from "@mui/icons-material";
 
 export default function Flashcard({flashcardData}) {
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
     const apiUrl = process.env.REACT_APP_API_URL;
 
     const { fetching, setFetching, flashcardId, summary, userSession, note_id, flashcards, setFlashcards, fetchNote } = flashcardData;
@@ -111,6 +111,7 @@ export default function Flashcard({flashcardData}) {
     }
 
     const generateFlashcards = async () => {
+      console.log(summary);
       setFetching(true);
         if (!summary) {
           alert("Please create a summarized file before generating flashcards.");
@@ -119,11 +120,12 @@ export default function Flashcard({flashcardData}) {
     
         const prompt = `
           Make an array of objects to generate based on the content to be generated for the flashcards:
-          - Make it as much as possible that the content is familiarized.
+          - Make more of flashcards with the number based on every key words in the content.
           - This is for JSON generation.
           - If there's a possible enumeration question, add it.
           - Format: [{ description: "...", answer: "..." }]
-          Content: ${summary}
+          Content: 
+          ${summary}
         `;
     
         try {
@@ -182,8 +184,8 @@ export default function Flashcard({flashcardData}) {
     return (
         <div>
           <Grid2 container columns={11} justifyContent={'center'} spacing={2}>
-            <Grid2 size={2}></Grid2>
-            <Grid2 size={6} sx={{height: "78vh", overflowY: "auto",fontSize: 17 , backgroundColor: "#CFE1B9", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 3}}>
+            <Grid2 size={2} hidden={window.innerWidth < 500}></Grid2>
+            <Grid2 size={6} sx={{ height: "81vh", width: window.innerWidth < 500 ? "100%":"60%", overflowY: "auto",fontSize: 17 , backgroundColor: "#CFE1B9", borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 3}}>
               <p style={{marginTop:"-20px"}}>Flashcards: <strong>{flashcards.length}</strong></p>
               <Box sx={{marginBottom: 1}}>
                 {select && (
@@ -253,13 +255,14 @@ export default function Flashcard({flashcardData}) {
                   )}
                 </Box>
               ))}
+              
             </Grid2>
-            <Grid2 size={2} spacing={10}>
-              <Button disabled={fetching} sx={{ fontSize: 16, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={diaAddFlashOpen} startIcon={<AddIcon/>}><strong>Add Flashcard</strong></Button>
-              <Button disabled={fetching} sx={{ fontSize: 16, marginBottom: 2, backgroundColor: select && "#CFE1B9"}} size='large' fullWidth variant='contained' onClick={toggleSelect} startIcon={<ChecklistIcon/>}><strong>Select Flashcards</strong></Button>
-              <Button disabled={fetching || summary == ""} sx={{ fontSize: 15, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={generateFlashcards} startIcon={<AutoAwesomeIcon/>}><strong>{fetching ? "Generating..." : "Generate Flashcards"}</strong></Button>
-              <Button disabled={fetching || flashcards.length === 0} sx={{ fontSize: 16, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={startReviewing} startIcon={<QuestionAnswerIcon/>}><strong>Start Reviewing</strong></Button>
-            </Grid2>
+              <Grid2 size={2} spacing={10} hidden={window.innerWidth < 500}>
+                <Button disabled={fetching} sx={{ fontSize: 16, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={diaAddFlashOpen} startIcon={<AddIcon/>}><strong>Add Flashcard</strong></Button>
+                <Button disabled={fetching} sx={{ fontSize: 16, marginBottom: 2, backgroundColor: select && "#CFE1B9"}} size='large' fullWidth variant='contained' onClick={toggleSelect} startIcon={<ChecklistIcon/>}><strong>Select Flashcards</strong></Button>
+                <Button disabled={fetching || summary == ""} sx={{ fontSize: 15, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={generateFlashcards} startIcon={<AutoAwesomeIcon/>}><strong>{fetching ? "Generating..." : "Generate Flashcards"}</strong></Button>
+                <Button disabled={fetching || flashcards.length === 0} sx={{ fontSize: 16, marginBottom: 2}} size='large' fullWidth variant='contained' onClick={startReviewing} startIcon={<QuestionAnswerIcon/>}><strong>Start Reviewing</strong></Button>
+              </Grid2>
           </Grid2>
 
             <Dialog open={diaAddFlash} onClose={diaAddFlashClose}>
@@ -267,8 +270,8 @@ export default function Flashcard({flashcardData}) {
               <DialogContent>
                 <DialogContentText>
                   <Grid2 display={'grid'}>
-                    <TextField error={isEmpty} label="Question" multiline maxRows={5} sx={{marginTop:1, width: 400}} value={question} onChange={(e) => {setQuestion(e.target.value); setIsEmpty(false)}}/>
-                    <TextField error={isEmpty} label="Answer" variant="filled" multiline maxRows={5} sx={{marginTop:1}} value={answer} onChange={(e) => {setAnswer(e.target.value); setIsEmpty(false)}}/>
+                    <TextField error={isEmpty} label="Question" multiline maxRows={5} sx={{marginTop:1, width: window.innerWidth < 500 ? "auto" : 400}} value={question} onChange={(e) => {setQuestion(e.target.value); setIsEmpty(false)}}/>
+                    <TextField error={isEmpty} label="Answer" variant="filled" multiline maxRows={5} sx={{marginTop:1, width: window.innerWidth < 500 ? "auto" : 400}} value={answer} onChange={(e) => {setAnswer(e.target.value); setIsEmpty(false)}}/>
                   </Grid2>
                 </DialogContentText>
               </DialogContent>
@@ -321,6 +324,43 @@ export default function Flashcard({flashcardData}) {
                 </Button>
               </DialogActions>
             </Dialog>
+
+            <SpeedDial
+                ariaLabel="SpeedDial basic example"
+                sx={{ position: 'absolute', bottom: 16, right: 16 }}
+                icon={<SpeedDialIcon />}
+                hidden={window.innerWidth > 500}
+                disabled={fetching}
+            >
+              <SpeedDialAction
+                key={"Start Reviewing"}
+                icon={<QuestionAnswerIcon />}
+                tooltipTitle={"Start Reviewing"}
+                onClick={startReviewing}
+                disabled={fetching || flashcards.length === 0}
+              />
+              <SpeedDialAction
+                key={"Generate Flashcards"}
+                icon={<AutoAwesomeIcon />}
+                tooltipTitle={"Generate Flashcards"}
+                onClick={generateFlashcards}
+                disabled={fetching || summary == ""}
+              />
+              <SpeedDialAction
+                key={"Select Flashcards"}
+                icon={<ChecklistIcon />}
+                tooltipTitle={"Select Flashcards"}
+                onClick={toggleSelect}
+                disabled={fetching}
+              />
+              <SpeedDialAction
+                key={"Add Flashcards"}
+                icon={<AddIcon />}
+                tooltipTitle={"Add Flashcards"}
+                onClick={diaAddFlashOpen}
+                disabled={fetching}
+              />
+            </SpeedDial>
         </div>
     );
 }

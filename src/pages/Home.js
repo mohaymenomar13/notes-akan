@@ -26,9 +26,6 @@ export default function Home(props) {
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
     
-    const handleClose = () => {
-      setOpen(false);
-    };
     const handleOpen = () => {
       setOpen(true);
     };
@@ -148,7 +145,6 @@ export default function Home(props) {
           <Backdrop
             sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
             open={!name}
-            onClick={handleClose}
           >
             <CircularProgress color="inherit" />
           </Backdrop>
@@ -207,7 +203,7 @@ export default function Home(props) {
                     <h2>{copyData.title}</h2>
                     <p style={{borderBottom: "solid 1px black", marginBottom: "30px"}}>from: <strong>{copyOwner}</strong></p>
                   </div>
-                  <ReactMarkdown>{copyData.summary == null ? "No file content" : copyData.summary}</ReactMarkdown>
+                  <ReactMarkdown>{summaryData == "" ? "No file content" : summaryData}</ReactMarkdown>
                 </DialogContentText>  
               </DialogContent>
               <DialogActions>

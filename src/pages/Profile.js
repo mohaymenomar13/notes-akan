@@ -159,8 +159,8 @@ export default function Profile() {
     return (
         <div>
         <ThemeProvider theme={theme}>
-            
-            <Grid2 justifySelf={"center"} width={800} sx={{padding: 2}}>
+        {/* width: window.innerWidth < 500 ? "100%":"800" */}
+            <Grid2 justifySelf={"center"} width={window.innerWidth < 500 ? "100%":"800"} sx={{padding: 2}}>
                 <Grid2 justifyContent={"space-between"} sx={{marginRight: 5}} container>
                     <Grid2 container>
                         <h1>Profile Page</h1>
@@ -217,29 +217,7 @@ export default function Profile() {
                 </div>
                 )}
             </Grid2>
-            {/* <p>{data.name}</p>
-            {userSession == user_id && (
-            <div>
-            <h2>Account Settings</h2>
-            <label>
-                Current Password:
-                <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" />
-            </label><br/>
-            <label>
-                New Password:
-                <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" />
-            </label><br/>
-            <label>
-                Confirm Password:
-                <input value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} type="password" />
-            </label><br/>
-            <button onClick={changePassword}>Save Changes</button><br/>
-            <h2>Analytics Overview</h2>
-            <p>Number of Notes: {notes.length}</p>
-            <button onClick={handleLogout}>Logout</button>
-            </div>
-            )} */}
-
+            
             <Dialog open={edit} onClose={editDiaClose}>
                 <DialogTitle id="edit-dialog-title">Edit Profile</DialogTitle>
                 <DialogContent>
