@@ -40,7 +40,7 @@ export default function Note({noteData}) {
     }, [summary])
 
     const genAI = new GoogleGenerativeAI(process.env.REACT_APP_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     const toggleEditMode = () => {
         setIsEditing(!isEditing);
@@ -83,9 +83,10 @@ export default function Note({noteData}) {
             else return alert('Unsupported file format. Please upload a PDF, DOCX, or TXT file.');
 
             const formattedPrompt = `
-            Summarize the following content according to this format. Summarize as much as possible for study material:
-              - Use "<Word Key> - <Description>." for single key-description items.
-              - Don’t put too many chapters if not necessary.
+            Summarize the following content according to this format. Summarize as much as key words or person you can find:
+              - Use "<Word Key or Title of paragraph> - <Description>." for single key-description items.
+              - Use "<Person Name> - <Description>." for person descriptions.
+              - You may include lessons or chapters, etc... to separate the notes.
               - You may use 'Markdown'
               - If the Description is an enumeration, format as: 
                 "<Description>:

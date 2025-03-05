@@ -123,7 +123,7 @@ export default function Flashcard({flashcardData}) {
           - Make more of flashcards with the number based on every key words in the content.
           - This is for JSON generation.
           - If there's a possible enumeration question, add it.
-          - Format: [{ description: "...", answer: "..." }]
+          - Format: [{ description: "<Description of Word Key>", answer: "<Word Key>" }]
           Content: 
           ${summary}
         `;
