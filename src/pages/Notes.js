@@ -146,14 +146,14 @@ export default function Notes() {
             <ThemeProvider theme={theme}>
                 <Backdrop
                     sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
-                    open={title == ""}
+                    open={data.length == 0}
                 >
                     <CircularProgress color="inherit" />
                 </Backdrop>
-                <Grid2 justifyContent={"space-between"} sx={{marginRight: 5, marginLeft: 5}} container>
-                    <Grid2 container sx={{width: "28vh", fontSize: "1.5vh"}}>
+                <Grid2 justifyContent={"space-between"} sx={{marginRight: 5, marginLeft: 5, display: 'flex'}} container>
+                    <Grid2 container sx={{fontSize: "1.5vh", display: 'flex'}}>
                         {editTitle ? (<TextField  sx={{width: "18vh"}} color='primary' value={title} onChange={(e) => setTitle(e.target.value)}></TextField>) : (<h1>{title.slice(0, 14)}</h1>)}
-                        <IconButton onClick={toggleEditTitle}><EditIcon sx={{fontSize: 40}}/></IconButton>
+                        <IconButton onClick={toggleEditTitle}><EditIcon sx={{fontSize: 30}}/></IconButton>
                     </Grid2>
                     <IconButton onClick={() => navigate("/")}><HomeIcon sx={{ fontSize: 50 }}/></IconButton>
                 </Grid2>
