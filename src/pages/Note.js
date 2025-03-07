@@ -84,15 +84,20 @@ export default function Note({noteData}) {
 
             const formattedPrompt = `
             Summarize the following content according to this format. Summarize as much as key words or person you can find:
-              - Use "<Word Key or Title of paragraph> - <Description>." for single key-description items.
-              - Use "<Person Name> - <Description>." for person descriptions.
+              - Use "Key Word or Title of paragraph - Description." for single key-description items.
+              - If the Key Word has multiple Description, don't repeat the Key Word but instead format it as: 
+                "<Key Word>:
+                  1. <Description>
+                  2. <Description>
+                  3. <Description>
+              - Use "Person Name - Description." for person descriptions.
               - You may include lessons or chapters, etc... to separate the notes.
-              - You may use 'Markdown'
+              - You may use 'Markdown' and bold the key words.
               - If the Description is an enumeration, format as: 
                 "<Description>:
-                  1. <Word Key>
-                  2. <Word Key>
-                  3. <Word Key>
+                  1. <Key Word>
+                  2. <Key Word>
+                  3. <Key Word>
                   ..."
               - If an image is present, it will be indicated by the placeholder "[image]".
             Important: Copy the exact wording of the descriptions as they appear in the text. Do not paraphrase or alter the descriptions in any way. If you have no choice, then do what necessary to avoid 'RECITATION'.
