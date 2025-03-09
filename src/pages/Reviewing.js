@@ -157,13 +157,13 @@ export default function Reviewing() {
             (<>            
             <Grid2 container display={'grid'}>
                 <Grid2>
-                    <div style={{width: window.innerWidth < 500 ? "100%":"80vh"}} className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={() => setIsFlipped(!isFlipped)}>
+                    <div style={{width: window.innerWidth < 500 ? "80%":"80vh"}} className={`flashcard ${isFlipped ? 'flipped' : ''}`} onClick={() => setIsFlipped(!isFlipped)}>
                         <Markdown className="front">{randomizedFlashcards[currentIndex].description}</Markdown>
                         <Markdown className="back">{randomizedFlashcards[currentIndex].answer}</Markdown>
                     </div>
                 </Grid2>
                 <Grid2 container display={'grid'} justifyContent={'center'} rowSpacing={1} sx={{marginTop: 5}} columnSpacing={{ xs: 1, sm: 1, md: 3 }}>
-                <LinearProgress variant="buffer" value={(currentIndex+1)/flashcards.length*100}/>
+                    <LinearProgress variant="buffer" value={(currentIndex+1)/flashcards.length*100}/>
                     <Box sx={{ width: '100%' }}>
                         <Grid2 container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
                             <Grid2 size={6}>

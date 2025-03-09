@@ -64,7 +64,7 @@ export default function Notes() {
             } 
             if (response.data.summary.summary.length > 0 && response.data.chat.chat == 0 || response.data.chat.chat == "[]") {
                 setMessages([
-                    { role: 'user', content: "Below is the summarized note of a user, he/she will gonna ask or wants to clarify something in his/her note: " + response.data.summary.summary },
+                    { role: 'user', content: "Below is the summarized note of a user, he/she will gonna ask or wants to clarify something in his/her note. Don't make tables instead find another way to compare: " + response.data.summary.summary },
                     { role: 'model', content: `Is there something about the note you’d like to talk about?` }
                 ]);
             }
