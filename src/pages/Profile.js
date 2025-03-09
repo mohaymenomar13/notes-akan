@@ -216,6 +216,7 @@ export default function Profile() {
                 <Button variant='contained' onClick={handleLogout}>Logout</Button>
                 </div>
                 )}
+                <p>Version: 0.1.0</p>
             </Grid2>
             
             <Dialog open={edit} onClose={editDiaClose}>

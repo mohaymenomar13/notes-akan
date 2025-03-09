@@ -55,6 +55,7 @@ export default function Reviewing() {
         newRatings[currentIndex] = rating;
         setRatings(newRatings);
         setSelectedRating(rating);
+
     };
 
     const shuffleArray = (array) => {
@@ -67,7 +68,6 @@ export default function Reviewing() {
             params.append('user_id', userSession);
             params.append('note_id', note_id);
             const response = await axios.get(apiUrl+'note.php', { params });
-            console.log(response.data);
             setTitle(response.data.title);
             if (response.data.flashcard.flashcard !== null || response.data.flashcard.flashcard !== "null") {
                 setEmptyFlashcards(false);
@@ -83,8 +83,10 @@ export default function Reviewing() {
     }
 
     const reviewQuestions = () => {
+        console.log(ratings);
+        console.log(randomizedFlashcards);
         setReviewMode(true);
-        setBadQuestions(flashcards.filter((_, index) => ratings[index] === "Bad"))
+        setBadQuestions(randomizedFlashcards.filter((_, index) => ratings[index] === "Bad"))
     };
 
     useEffect(() => {
